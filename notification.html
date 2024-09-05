@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notification Example</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.container {
+    text-align: center;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+</style>
+<body>
+<div class="container">
+    <h1>Website Notification</h1>
+    <button id="notifyBtn">Show Notification</button>
+</div>
+<script >
+    document.getElementById('notifyBtn').addEventListener('click', function() {
+    // Check if the browser supports notifications
+    if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+    } else if (Notification.permission === "granted") {
+        // If permission is already granted, show the notification
+        showNotification();
+    } else if (Notification.permission !== 'denied') {
+        // Otherwise, request permission from the user
+        Notification.requestPermission().then(function (permission) {
+            if (permission === "granted") {
+                showNotification();
+            }
+        });
+    }
+});
+
+function showNotification() {
+    var notification = new Notification("Umayyy!", {
+        body: "0-7 to HHAHAHAAHHA lugi lugi.",
+        icon: "icon.png" // Path to your notification icon
+    });
+
+    // Close the notification after 3 seconds
+    setTimeout(notification.close.bind(notification), 10000);
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Custom Marker Google Map</title>
+    <style>
+        /* Style for the map container */
+        #map-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Style for the map */
+        #map {
+            height: 600px; /* Increased height for better visibility */
+            width: 100%;
+        }
+
+        /* Style for the legend container */
+        #legend-container {
+            width: 10%;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+        }
+
+        /* Style for the legend title */
+        #legend-container h3 {
+            margin-top: 0;
+        }
+
+        /* Style for legend items */
+        .legend-item {
+            margin-bottom: 5px;
+        }
+
+        /* Style for legend marker icons */
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <!-- Map and Legend Containers -->
+    <div id="map-container">
+        <!-- Google Maps API Script -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-dFHYjTqEVLndbN2gdvXsx09jfJHmNc8&callback=initMap" async defer></script>
+
+        <!-- Map container -->
+        <div id="map"></div>
+
+        <!-- Legend container -->
+        <div id="legend-container">
+            <h3>Legend</h3>
+            <div class="legend-item">
+                <img src="uploads/marker.png" class="legend-icon" alt="Own Farm Marker">
+                Own Farm
+            </div>
+            <div class="legend-item">
+                <img src="uploads/marker1.png" class="legend-icon" alt="Farm with Pest and Disease Marker">
+                Farm with Pest and Disease
+            </div>
+            <div class="legend-item">
+                <img src="uploads/marker2.png" class="legend-icon" alt="Farm Going to be Harvest Marker">
+                Farm Going to be Harvest
+            </div>
+            <div class="legend-item">
+                <img src="uploads/marker3.png" class="legend-icon" alt="Farm Going to be Plant Marker">
+                Farm Going to be Plant
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to initialize the map
+        function initMap() {
+            // Map options
+            var options = {
+                zoom: 14, // Adjust zoom level for better visibility
+                center: {lat: 13.236910789740135, lng: 121.23953906402586} // Centered at Naujan, Oriental Mindoro
+            };
+
+            // New map
+            var map = new google.maps.Map(document.getElementById('map'), options);
+
+            // Array of marker positions and images
+            var markers = [
+    { position: {lat: 13.2345, lng: 121.2387}, image: 'uploads/marker.png' },
+    { position: {lat: 13.2350, lng: 121.2400}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2360, lng: 121.2390}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2347, lng: 121.2378}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2352, lng: 121.2403}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2358, lng: 121.2388}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2354, lng: 121.2372}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2361, lng: 121.2402}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2365, lng: 121.2394}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2370, lng: 121.2386}, image: 'uploads/marker1.png' },
+    // Marker 2
+    { position: {lat: 13.2355, lng: 121.2380}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2365, lng: 121.2405}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2370, lng: 121.2395}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2358, lng: 121.2373}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2362, lng: 121.2401}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2368, lng: 121.2392}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2360, lng: 121.2375}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2367, lng: 121.2403}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2373, lng: 121.2394}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2378, lng: 121.2386}, image: 'uploads/marker2.png' },
+    // Marker 3
+    { position: {lat: 13.2375, lng: 121.2385}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2365, lng: 121.2375}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2355, lng: 121.2405}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2373, lng: 121.2383}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2367, lng: 121.2379}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2359, lng: 121.2407}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2371, lng: 121.2389}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2363, lng: 121.2371}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2352, lng: 121.2401}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2377, lng: 121.2381}, image: 'uploads/marker3.png' },
+    // Additional markers
+    { position: {lat: 13.2369, lng: 121.2404}, image: 'uploads/marker.png' },
+    { position: {lat: 13.2348, lng: 121.2395}, image: 'uploads/marker1.png' },
+    { position: {lat: 13.2372, lng: 121.2382}, image: 'uploads/marker2.png' },
+    { position: {lat: 13.2356, lng: 121.2371}, image: 'uploads/marker3.png' },
+    { position: {lat: 13.2370, lng: 121.2398}, image: 'uploads/marker.png' },
+    // Add more markers as needed
+];
+
+
+            // Loop through markers array and add each marker to the map
+            markers.forEach(function(markerInfo) {
+                var marker = new google.maps.Marker({
+                    position: markerInfo.position,
+                    map: map,
+                    icon: {
+                        url: markerInfo.image,
+                        size: new google.maps.Size(50, 50),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(25, 50) // Position the anchor point to center bottom of the marker
+                    },
+                    animation: google.maps.Animation.DROP // Bounce animation
+                });
+            });
+        }
+    </script>
+</body>
+</html>

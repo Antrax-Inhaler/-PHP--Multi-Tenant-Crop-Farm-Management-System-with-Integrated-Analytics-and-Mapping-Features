@@ -1,0 +1,192 @@
+CREATE TABLE `cart_list` (
+  `id` int(30) NOT NULL,
+  `client_id` int(30) NOT NULL,
+  `product_id` int(30) NOT NULL,
+  `quantity` float NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `category_list` (
+  `id` int(30) NOT NULL,
+  `vendor_id` int(30) NOT NULL,
+  `name` text NOT NULL,
+  `description` text NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `delete_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `client_list` (
+  `id` int(30) NOT NULL,
+  `code` varchar(100) NOT NULL,
+  `firstname` text NOT NULL,
+  `middlename` text DEFAULT NULL,
+  `lastname` text NOT NULL,
+  `gender` text NOT NULL,
+  `contact` text NOT NULL,
+  `address` text NOT NULL,
+  `email` text NOT NULL,
+  `password` text NOT NULL,
+  `avatar` text DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `delete_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `Id` int(11) NOT NULL,
+  `VendorId` int(11) DEFAULT NULL,
+  `Name` varchar(255) DEFAULT NULL,
+  `Type` varchar(255) DEFAULT NULL,
+  `PlannedPlantingDate` date DEFAULT NULL,
+  `DatePlanted` date DEFAULT NULL,
+  `SizeOfPlantation` decimal(10,2) DEFAULT NULL,
+  `Description` text DEFAULT NULL,
+  `Picture1` varchar(255) DEFAULT NULL,
+  `Picture2` varchar(255) DEFAULT NULL,
+  `Picture3` varchar(255) DEFAULT NULL,
+  `FarmId` int(11) DEFAULT NULL,
+  `PestID` int(11) DEFAULT NULL,
+  `Status` enum('Alive','Diseased','End of Lifespan','Unproductive') DEFAULT NULL,
+  `delete_flag` tinyint(1) DEFAULT 0,
+  `farm_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `cropactivityrecommendation` (
+  `Id` int(11) NOT NULL,
+  `CropType` varchar(255) DEFAULT NULL,
+  `Variety` varchar(255) DEFAULT NULL,
+  `AgeInDays` int(11) DEFAULT NULL,
+  `Explanation` text DEFAULT NULL,
+  `RecommendedActivity` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `croppestdisease` (
+  `Id` int(11) NOT NULL,
+  `Name` varchar(255) DEFAULT NULL,
+  `CropID` int(11) DEFAULT NULL,
+  `RefId` int(11) DEFAULT NULL,
+  `SizeOfAreaAffected` decimal(10,2) DEFAULT NULL,
+  `Status` enum('Existing','Fixed','Worsened') DEFAULT NULL,
+  `UploadImage` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `farm` (
+  `Id` int(11) NOT NULL,
+  `Name` varchar(255) DEFAULT NULL,
+  `Location` varchar(255) DEFAULT NULL,
+  `Size` decimal(10,2) DEFAULT NULL,
+  `Description` text DEFAULT NULL,
+  `VendorListId` int(11) DEFAULT NULL,
+  `Image` varchar(255) DEFAULT NULL,
+  `CreatedAt` datetime DEFAULT current_timestamp(),
+  `UpdatedAt` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `harvest` (
+  `Id` int(11) NOT NULL,
+  `CropId` int(11) DEFAULT NULL,
+  `HarvestedDate` date DEFAULT NULL,
+  `AmountOfHarvest` decimal(10,2) DEFAULT NULL,
+  `Paid` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `order_items` (
+  `order_id` int(30) NOT NULL,
+  `product_id` int(30) NOT NULL,
+  `quantity` double NOT NULL DEFAULT 0,
+  `price` double NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `order_list` (
+  `id` int(30) NOT NULL,
+  `code` varchar(100) NOT NULL,
+  `client_id` int(30) NOT NULL,
+  `vendor_id` int(30) NOT NULL,
+  `total_amount` double NOT NULL DEFAULT 0,
+  `delivery_address` text NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `product_list` (
+  `id` int(30) NOT NULL,
+  `vendor_id` int(30) DEFAULT NULL,
+  `category_id` int(30) DEFAULT NULL,
+  `name` text NOT NULL,
+  `description` text NOT NULL,
+  `price` double NOT NULL DEFAULT 0,
+  `image_path` text DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `delete_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `referencepestdisease` (
+  `RefID` int(11) NOT NULL,
+  `Name` varchar(255) DEFAULT NULL,
+  `ManagementInformation` text DEFAULT NULL,
+  `Symptoms` text DEFAULT NULL,
+  `PreventiveMeasures` text DEFAULT NULL,
+  `CurativeMeasures` text DEFAULT NULL,
+  `ImageURL1` varchar(255) DEFAULT NULL,
+  `ImageURL2` varchar(255) DEFAULT NULL,
+  `ImageURL3` varchar(255) DEFAULT NULL,
+  `Status` enum('Existing','Fixed','Worsened') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `review` (
+  `id` int(30) NOT NULL,
+  `product_id` int(30) NOT NULL,
+  `order_id` int(30) NOT NULL,
+  `client_id` int(30) NOT NULL,
+  `rating` int(1) NOT NULL,
+  `comment` text DEFAULT NULL,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `shop_type_list` (
+  `id` int(30) NOT NULL,
+  `name` text NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `delete_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `system_info` (
+  `id` int(30) NOT NULL,
+  `meta_field` text NOT NULL,
+  `meta_value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `users` (
+  `id` int(50) NOT NULL,
+  `firstname` varchar(250) NOT NULL,
+  `lastname` varchar(250) NOT NULL,
+  `username` text NOT NULL,
+  `password` text NOT NULL,
+  `avatar` text DEFAULT NULL,
+  `last_login` datetime DEFAULT NULL,
+  `type` tinyint(1) NOT NULL DEFAULT 0,
+  `date_added` datetime NOT NULL DEFAULT current_timestamp(),
+    `commission` decimal(10,2) DEFAULT 0.00,
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `vendor_list` (
+  `id` int(30) NOT NULL,
+  `code` varchar(100) NOT NULL,
+  `shop_type_id` int(30) NOT NULL,
+  `shop_name` text NOT NULL,
+  `shop_owner` text NOT NULL,
+  `contact` text NOT NULL,
+  `username` text NOT NULL,
+  `password` text NOT NULL,
+  `avatar` text DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `delete_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `user_id` int(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `vendor_commissions` (
+  `id` int(11) NOT NULL,
+  `vendor_id` int(11) NOT NULL,
+  `month` varchar(7) NOT NULL,
+  `total_sales` double NOT NULL DEFAULT 0,
+  `total_commission` double NOT NULL DEFAULT 0,
+  `paid` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

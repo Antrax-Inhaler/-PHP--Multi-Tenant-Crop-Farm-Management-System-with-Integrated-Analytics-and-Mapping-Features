@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Cards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .notification-container {
+            position: fixed;
+            width: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .notification-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: #ffffff; /* Change to your desired background color */
+            max-width: 300px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 8px; /* Adjust border radius as needed */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            transform: translateX(calc(-100% - 40px)); /* Initial position outside the viewport */
+            transition: transform 0.5s ease-in-out; /* Smooth transition for animation */
+
+            /* Animation */
+            animation: slideInOut 10s ease-in-out infinite;
+            z-index: 5;
+        }
+
+        @keyframes slideInOut {
+            0%, 100% {
+                transform: translateX(calc(-100% - 40px));
+            }
+            50% {
+                transform: translateX(0);
+            }
+        }
+
+        .notification-show {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container">
+        <div class="notification-toast">
+            <p>This is a notification message!</p>
+        </div>
+    </div>
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
+
+<!-- Using Font Awesome icon -->
+<i class="fas fa-heart" style="color: red;"></i>
+
+<!-- Inline SVG -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+    <path d="M12 2L1 21h22L12 2zm-1 14h2v2h-2v-2zm0-7h2v5h-2V9z"/>
+</svg>
+
+    <button onclick="showNotification()">Show Notification</button>
+
+    <script>
+        function showNotification() {
+            const notificationToast = document.querySelector('.notification-toast');
+            notificationToast.classList.add('notification-show');
+            
+            setTimeout(() => {
+                notificationToast.classList.remove('notification-show');
+            }, 3000); // Notification will disappear after 3 seconds
+        }
+    </script>
+</body>
+</html>

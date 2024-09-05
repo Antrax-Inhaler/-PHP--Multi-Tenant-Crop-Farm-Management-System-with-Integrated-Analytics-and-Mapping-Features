@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Test</title>
+</head>
+<body>
+    <h1>Notification Test</h1>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function requestNotificationPermission() {
+                if (Notification.permission === "granted") {
+                    displayWelcomeNotification();
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            displayWelcomeNotification();
+                        }
+                    });
+                }
+            }
+
+            function displayWelcomeNotification() {
+                if (Notification.permission === "granted") {
+                    new Notification("Welcome!", {
+                        body: "Thank you for allowing notifications.",
+                        icon: 'path/to/icon.png' // Optional: Add an icon
+                    });
+                }
+            }
+
+            // Trigger the notification permission request
+            requestNotificationPermission();
+        });
+    </script>
+</body>
+</html>

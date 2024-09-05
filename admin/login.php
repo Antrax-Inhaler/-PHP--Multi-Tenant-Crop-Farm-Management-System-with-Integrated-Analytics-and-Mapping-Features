@@ -1,0 +1,160 @@
+<?php require_once('../config.php') ?>
+<!DOCTYPE html>
+<html lang="en" class="" style="height: auto;">
+<?php require_once('inc/header.php') ?>
+<body class="hold-transition login-page">
+  <script>
+    start_loader()
+  </script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #e0e0e0;
+      margin: 0;
+      background-image: url('<?= validate_image($_settings->info('cover')) ?>');
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .login-container {
+      background: linear-gradient(to bottom right, #9CDC78, #74DCB0);
+      border-radius: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 400px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #logo-img {
+      width: 15em;
+      height: 15em;
+      object-fit: scale-down;
+      object-position: center center;
+      border-radius: 50%;
+    }
+
+    #system_name {
+      color: #fff;
+      text-shadow: 3px 3px 3px #000;
+      margin-top: 20px;
+    }
+
+    .login-header {
+      padding: 10px;
+    }
+
+    .login-header h1 {
+      margin: 0;
+      font-size: 2em;
+      color: white;
+    }
+
+    .login-body {
+      padding: 20px;
+    }
+
+    .login-body p {
+      font-size: 0.8em;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      font-size: 1em;
+    }
+
+    .form-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .login-link {
+      text-decoration: none;
+      color: #333;
+      font-size: 0.9em;
+    }
+
+    .next-button {
+      padding: 10px 20px;
+      background: #00bfa5;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .next-button:hover, .btn-primary:hover {
+      background: #00796b;
+    }
+
+    .login-msg {
+      color: #00796b;
+      padding: 0px;
+    }
+
+    @media (max-width: 1000px) {
+      .login-container {
+        margin-top: 100px;
+      }
+    }
+  </style>
+
+  <?php if($_settings->chk_flashdata('success')): ?>
+    <script>
+      alert_toast("<?php echo $_settings->flashdata('success') ?>", 'success')
+    </script>
+  <?php endif;?>
+
+  <div class="login-container">
+    <div class="clear-fix my-2"></div>
+    <div class="login-header">
+      <h1>Association Login</h1>
+      <p class="login-msg">Sign in to start your session</p>
+    </div>
+    <div class="login-body">
+      <form id="login-frm" action="" method="post">
+        <div class="form-group">
+          <input type="text" class="form-control" name="username" autofocus placeholder="Username">
+        </div>
+        <div class="form-group">
+          <input type="password" class="form-control" name="password" placeholder="Password">
+        </div>
+        <div class="form-footer">
+          <div>
+            <a href="<?= base_url ?>">Back to Site</a>
+          </div>
+          <div>
+            <button type="submit" class="next-button">Sign In</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- jQuery -->
+  <script src="plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="dist/js/adminlte.min.js"></script>
+
+  <script>
+    $(document).ready(function(){
+      end_loader();
+    })
+  </script>
+</body>
+</html>

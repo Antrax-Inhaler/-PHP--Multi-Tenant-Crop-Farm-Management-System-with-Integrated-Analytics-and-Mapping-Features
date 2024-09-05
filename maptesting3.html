@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Marker Style</title>
+  <style>
+    /* Your custom marker CSS styles */
+    .marker_body {
+      background-color: rgb(2, 150, 236);
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      padding: 2px;
+      border: white solid thin;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .marker_custom {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .img_container {
+      width: 100%;
+      height: 90%;
+    }
+
+    .img_container img {
+      width: 100%;
+      height: 100%;
+      border-radius: 9px;
+    }
+
+    .product_n p {
+      font-size: 10px;
+      color: white;
+    }
+
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 10px solid rgb(2, 150, 236); /* Change color as needed */
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="map" style="height: 600px;"></div>
+<script>
+  async function initMap() {
+  const { Map } = await google.maps.importLibrary('maps') as google.maps.MapsLibrary;
+  const { AdvancedMarkerElement } = await google.maps.importLibrary('marker') as google.maps.MarkerLibrary;
+
+  const center = { lat: 37.43238031167444, lng: -122.16795397128632 };
+  const map = new Map(document.getElementById('map'), {
+    zoom: 11,
+    center,
+    mapId: 'AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ', // Replace with your actual map ID
+  });
+
+  for (const property of properties) {
+    const content = document.createElement('div');
+    content.classList.add('marker_custom');
+    content.innerHTML = `
+      <div class="marker_body">
+        <div class="img_container">
+          <img src="${property.image_url}" alt="${property.name}">
+        </div>
+        <div class="product_n">
+          <p>${property.name}</p>
+        </div>
+      </div>
+      <div class="triangle"></div>
+    `;
+
+    const marker = new AdvancedMarkerElement({
+      map,
+      content,
+      position: property.position,
+      title: property.name,
+    });
+
+    marker.addListener('click', () => {
+      toggleHighlight(marker);
+    });
+  }
+}
+
+function toggleHighlight(marker) {
+  // Implement your highlight logic here if needed
+}
+
+// Sample properties data
+const properties = [
+  {
+    name: 'Product 1',
+    image_url: 'image_url_for_product_1',
+    position: { lat: 37.50024109655184, lng: -122.28528451834352 },
+  },
+  // Add more properties as needed
+];
+
+initMap();
+
+</script>
+  <!-- Load Google Maps JavaScript API -->
+  <script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap"
+  async
+></script> </body>
+</html>

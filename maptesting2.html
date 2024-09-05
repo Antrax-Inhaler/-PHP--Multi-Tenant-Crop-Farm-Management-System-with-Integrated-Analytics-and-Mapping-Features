@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Naujan Oriental Barangays</title>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    function initMap() {
+      // Replace with your actual coordinates for Naujan Oriental center
+      var center = {lat: 12.1712, lng: 121.5878};
+
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: center
+      });
+
+      // Define an array of barangay data with lat/lng and name
+      var barangays = [
+        { lat: 12.18, lng: 121.60, name: "Adrialuna" },
+        { lat: 12.19, lng: 121.59, name: "Andres Ylagan (Mag-asawang Tubig)" },
+        { lat: 12.17, lng: 121.62, name: "Antipolo" },
+        { lat: 12.15, lng: 121.63, name: "Apitong" },
+        { lat: 12.16, lng: 121.65, name: "Arangin" },
+        { lat: 12.13, lng: 121.57, name: "Bacungan" },
+        { lat: 12.12, lng: 121.59, name: "Bagumbayan" },
+        { lat: 12.11, lng: 121.61, name: "Balete" },
+        { lat: 12.10, lng: 121.60, name: "Bancuro" },
+        { lat: 12.09, lng: 121.58, name: "Banilad" },
+        { lat: 12.14, lng: 121.59, name: "Bulian" },
+        { lat: 12.18, lng: 121.56, name: "Camansi" },
+        { lat: 12.19, lng: 121.55, name: "Cantil" },
+        { lat: 12.20, lng: 121.57, name: "Daragang Magayon" },
+        { lat: 12.12, lng: 121.63, name: "Hinabongan" }
+      ];
+
+      // Loop through barangays and add markers
+      for (var i = 0; i < barangays.length; i++) {
+        var marker = new google.maps.Marker({
+          position: barangays[i],
+          map: map,
+          title: barangays[i].name
+        });
+      }
+    }
+  </script>
+    <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap"
+    async
+  ></script> </body>
+</html>

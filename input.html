@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autocomplete Example</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <style>
+    .ui-autocomplete-loading {
+      background: rgb(255, 255, 255) url('https://jqueryui.com/resources/demos/autocomplete/images/ui-anim_basic_16x16.gif') right center no-repeat;
+    }
+  </style>
+</head>
+<body>
+
+<input type="text" id="autocomplete-input" placeholder="Type something...">
+
+<script>
+  $(document).ready(function() {
+    // Define your list of options (can be fetched dynamically from a server)
+    var availableOptions = [
+      "Apple", "Banana", "Cherry", "Date", "Elderberry", "Fig", "Grape", "Honeydew", "Icaco", "Jackfruit",
+      "Kiwi", "Lemon", "Mango", "Nectarine", "Orange", "Papaya", "Quince", "Raspberry", "Strawberry", "Tomato",
+      "Ugli fruit", "Vanilla bean", "Watermelon", "Ximenia caffra", "Yellow passionfruit", "Zucchini"
+    ];
+
+    // Initialize the autocomplete widget
+    $("#autocomplete-input").autocomplete({
+      source: availableOptions, // Set the source of options
+      minLength: 1, // Specify the minimum length before triggering autocomplete
+      delay: 300, // Specify the delay in milliseconds before making the ajax request
+      autoFocus: true, // Automatically focus the first item
+      select: function(event, ui) {
+        console.log("Selected value: " + ui.item.value); // Log the selected value to console
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

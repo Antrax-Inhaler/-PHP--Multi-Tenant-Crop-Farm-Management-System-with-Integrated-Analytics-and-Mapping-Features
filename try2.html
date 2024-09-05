@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Sound Example</title>
+</head>
+<body>
+    <h1>Notification Sound Example</h1>
+    <audio id="silent-sound" src="sounds/silent.mp3" preload="auto" muted></audio>
+    <audio id="notification-sound" src="sounds/notification.wav" preload="auto"></audio>
+
+    <script>
+        window.onload = function() {
+            var silentSound = document.getElementById('silent-sound');
+            silentSound.play().then(function() {
+                silentSound.muted = false; // Unmute after playing the silent sound
+                setTimeout(function() {
+                    document.getElementById('notification-sound').play();
+                }, 5000); // 5000 milliseconds = 5 seconds
+            }).catch(function(error) {
+                console.log('Silent sound playback failed:', error);
+            });
+        };
+    </script>
+</body>
+</html>

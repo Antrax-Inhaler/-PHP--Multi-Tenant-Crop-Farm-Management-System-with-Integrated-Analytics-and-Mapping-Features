@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Places in Naujan, Oriental Mindoro</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-dFHYjTqEVLndbN2gdvXsx09jfJHmNc8&libraries=places"></script>
+    <script>
+        var map;
+        var marker;
+
+        function initMap() {
+            // Initialize map centered at Naujan, Oriental Mindoro
+            var naujan = { lat: 13.0195, lng: 121.1686 }; // Coordinates for Naujan, Oriental Mindoro
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: naujan,
+                zoom: 13
+            });
+
+            // Add custom image marker
+            marker = new google.maps.Marker({
+                position: naujan,
+                map: map,
+                draggable: true,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Change the URL to your custom marker image
+                    scaledSize: new google.maps.Size(32, 32) // Adjust the size of the image marker as needed
+                }
+            });
+
+            // Update marker position when dragged
+            google.maps.event.addListener(marker, 'dragend', function() {
+                updateMarkerPosition(marker.getPosition());
+            });
+
+            // Attempt to get user's location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(userLocation);
+                    marker.setPosition(userLocation);
+                    updateMarkerPosition(userLocation);
+                }, function() {
+                    handleLocationError(true);
+                });
+            } else {
+                // Browser doesn't support Geolocation
+                handleLocationError(false);
+            }
+        }
+
+        function updateMarkerPosition(latLng) {
+            document.getElementById('latitude').value = latLng.lat();
+            document.getElementById('longitude').value = latLng.lng();
+        }
+
+        function handleLocationError(browserHasGeolocation) {
+            var errorMessage = browserHasGeolocation ?
+                                'Error: The Geolocation service failed.' :
+                                'Error: Your browser doesn\'t support geolocation.';
+            alert(errorMessage);
+        }
+    </script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select Places in Naujan, Oriental Mindoro</h1>
+    <div id="map"></div>
+    <br>
+    <label for="latitude">Latitude:</label>
+    <input type="text" id="latitude" readonly>
+    <br>
+    <label for="longitude">Longitude:</label>
+    <input type="text" id="longitude" readonly>
+    <br><br>
+    <script>initMap();</script>
+</body>
+</html>

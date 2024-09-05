@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typhoon Tracker for the Philippines</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .weather-info {
+            margin-top: 20px;
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .error {
+            color: red;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Upcoming Typhoon Tracker - Philippines</h1>
+    <div id="weatherInfo" class="weather-info">Loading typhoon data...</div>
+    <div id="errorMessage" class="error"></div>
+
+    <script>
+        const apiKey = 'ZwaOAZ3cpQWEtRoJAcTO9436Txb4qYwF';
+        const lat = '13.41';  // Approximate center of the Philippines (latitude)
+        const lon = '122.57'; // Approximate center of the Philippines (longitude)
+
+        // Windy API endpoint for getting weather data
+        const apiUrl = `https://api.windy.com/api/point-forecast/v2?lat=${lat}&lon=${lon}&model=gfs&parameters=wind,surface,temp,rh&key=${apiKey}`;
+
+        // Fetching the data from the Windy API
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Weather Data:', data);
+
+                // Here, we process the data to extract and display typhoon-related information
+                const weatherInfoDiv = document.getElementById('weatherInfo');
+
+                // Check if data contains relevant typhoon information
+                // You may need to modify the logic here based on actual data structure
+                const windData = data.wind_u; // Placeholder: Adjust based on actual data format from Windy
+                if (windData && windData.length > 0) {
+                    const windSpeed = windData[0].value;
+                    const description = "Current wind speed in the area is " + windSpeed + " m/s.";
+
+                    // If wind speed is significantly high, consider it a potential typhoon alert
+                    if (windSpeed > 20) {  // Example threshold; adjust as needed
+                        weatherInfoDiv.innerHTML = `<h2>Potential Typhoon Alert!</h2><p>${description}</p>`;
+                        weatherInfoDiv.style.backgroundColor = '#ffcccc'; // Red background for alert
+                    } else {
+                        weatherInfoDiv.innerHTML = `<h2>No Typhoon Alerts</h2><p>${description}</p>`;
+                        weatherInfoDiv.style.backgroundColor = '#ccffcc'; // Green background for no alert
+                    }
+                } else {
+                    weatherInfoDiv.innerHTML = "<h2>No typhoon data available at the moment.</h2>";
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching Windy API data:', error);
+                document.getElementById('errorMessage').innerText = 'Error fetching data. Please try again later.';
+            });
+    </script>
+
+</body>
+</html>

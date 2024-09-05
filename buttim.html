@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <style>
+        .bot_container {
+            height: 50px;
+            width: 280px;
+            border-radius: 30px;
+            display: flex;
+            justify-content: right;
+            align-items: center;
+            background-color: transparent; /* Transparent background */
+            border: 2px solid white; /* White border */
+            padding: 0 20px;
+            color: white;
+            font-size: 16px;
+        }
+        .buybtn {
+            height: 50px;
+            width: 50px;
+            border-radius: 25px;
+            background-color: transparent;
+            border: none; /* No border for the button */
+            margin-left: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s ease; /* Transition for background color on hover */
+        }
+        .buybtn i {
+            font-size: 24px;
+            color: white;
+            transition: transform 0.3s ease; /* Transition for icon movement */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .buybtn:hover {
+            background-color: #2ddc9a; /* Background color on hover */
+        }
+    </style>
+
+    <div class="bot_container">
+        <span>Explore farmers product -</span>
+        <div>
+            <button class="buybtn"><i class="fas fa-shopping-cart fa-fw" style="color: white;"></i></button>
+        </div>
+    </div>
+</body>
+</html>
