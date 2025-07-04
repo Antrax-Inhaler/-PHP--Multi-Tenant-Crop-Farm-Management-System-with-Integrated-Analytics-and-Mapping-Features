@@ -163,7 +163,7 @@
 
     // Fetch weather data based on latitude and longitude
     function getWeatherData(lat, lon) {
-        const apiKey = "2f745fa85d563da5adb87b6cd4b81caf"; // Replace with your OpenWeather API key
+        const apiKey = ""; // Replace with your OpenWeather API key
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
 
         fetch(url)

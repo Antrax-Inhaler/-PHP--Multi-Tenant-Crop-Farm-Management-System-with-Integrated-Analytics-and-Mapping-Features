@@ -5,7 +5,7 @@ session_start();
 require "GeminiAI.php"; // Adjust path as needed
 
 // Replace with your actual Gemini API key
-$apiKey = "AIzaSyA9_Am1Lj-c_LRc46iWn9z5uCyjlvnZDXw";
+$apiKey = "";
 $geminiAI = new GeminiAI($apiKey);
 
 // Handle incoming POST request

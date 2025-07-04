@@ -115,7 +115,7 @@ while ($order = $orders_query->fetch_assoc()) {
     }
 
     // Send SMS
-    $apiKey = "1$1++0074+3n0w+0$4ychUR1-cHUr1'x"; // Replace with your Semaphore API key
+    $apiKey = ""; // Replace with your Semaphore API key
     $parameters = [
         'apikey' => $apiKey,
         'number' =>  $phoneNumber,

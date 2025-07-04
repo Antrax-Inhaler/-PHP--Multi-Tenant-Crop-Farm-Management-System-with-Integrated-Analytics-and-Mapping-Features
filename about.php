@@ -1,6 +1,6 @@
 
 <?php
-  $apiKey = 'AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&libraries=places&callback=initMap'; // Replace with your Google Maps API Key
+  $apiKey = ''; // Replace with your Google Maps API Key
 ?>
 
 <div id="map"></div>

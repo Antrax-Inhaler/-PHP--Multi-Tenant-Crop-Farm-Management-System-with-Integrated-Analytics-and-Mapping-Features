@@ -1558,7 +1558,7 @@ $(function () {
     // Function to fetch YouTube videos based on search query
     function fetchYouTubeVideos(query) {
       start_loader();
-        const apiKey = 'AIzaSyApi6uOjFhhw7mBQ4J5bIw0uEb9IoAKsW0';  // Replace with your actual API key
+        const apiKey = '';  // Replace with your actual API key
         const apiUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&part=snippet&type=video&q=${query}`;
 
         fetch(apiUrl)

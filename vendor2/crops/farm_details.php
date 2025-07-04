@@ -287,7 +287,7 @@ while ($row = $crops_details_result->fetch_assoc()) {
  // Fetch weather information
  const farmLatitude = <?= htmlspecialchars($farm['farm_latitude']) ?>;
     const farmLongitude = <?= htmlspecialchars($farm['farm_longitude']) ?>;
-    const apiKey = "2f745fa85d563da5adb87b6cd4b81caf";
+    const apiKey = "";
 
     function getWeather() {
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${farmLatitude}&lon=${farmLongitude}&appid=${apiKey}&units=metric`;

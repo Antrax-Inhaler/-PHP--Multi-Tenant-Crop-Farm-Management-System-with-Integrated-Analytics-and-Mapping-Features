@@ -16,7 +16,7 @@ if ($farmId > 0) {
         $longitude = $farm['Longitude'];
 
         // Make the OpenWeatherMap API request
-        $apiKey = "2f745fa85d563da5adb87b6cd4b81caf";
+        $apiKey = "";
         $url = "https://api.openweathermap.org/data/2.5/weather?lat={$latitude}&lon={$longitude}&appid={$apiKey}&units=metric";
         $weatherResponse = file_get_contents($url);
         $weatherData = json_decode($weatherResponse, true);

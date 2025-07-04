@@ -34,7 +34,7 @@ while ($vendor = $vendors->fetch_assoc()) {
         $message = "Hi! This is AgroNet. There has been a report of {$pest_disease_name} at a nearby farm: '{$farm_name}' where '{$crop_name}' is planted. For more details, visit: https://agronetnafa.website/vendor/?page=map/farm-pestanddisease";
 
         // Send SMS
-        $apiKey = "1$1++0074+3n0w+0$4ychUR1-cHUr1'x"; // Replace with your Semaphore API key
+        $apiKey = ""; // Replace with your Semaphore API key
         $parameters = [
             'apikey' => $apiKey,
             'number' =>  $phoneNumber,
