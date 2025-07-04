@@ -1,4 +1,6 @@
-<?php require_once('./config.php');
+<?php
+require_once('./config.php');
+
 // Get the current month in 'YYYY-MM' format
 // Fetch all vendors
 $vendors = $conn->query("SELECT id FROM vendor_list WHERE delete_flag = 0");
@@ -6,14 +8,19 @@ $vendors = $conn->query("SELECT id FROM vendor_list WHERE delete_flag = 0");
 while($vendor = $vendors->fetch_assoc()) {
     $vendor_id = $vendor['id'];
 
-    // Fetch all distinct months from order_list for the vendor
-    $months_query = $conn->query("SELECT DISTINCT DATE_FORMAT(date_created, '%Y-%m') as month FROM order_list WHERE vendor_id = '{$vendor_id}'");
+    // Fetch all distinct months from order_list for the vendor with status = 4
+    $months_query = $conn->query("SELECT DISTINCT DATE_FORMAT(date_created, '%Y-%m') as month 
+                                  FROM order_list 
+                                  WHERE vendor_id = '{$vendor_id}' AND status = 4");
 
     while($month_row = $months_query->fetch_assoc()) {
         $month = $month_row['month'];
 
-        // Calculate total sales for the month
-        $sales_query = $conn->query("SELECT SUM(total_amount) as total_sales FROM order_list WHERE vendor_id = '{$vendor_id}' AND DATE_FORMAT(date_created, '%Y-%m') = '{$month}'")->fetch_assoc();
+        // Calculate total sales for the month with status = 4
+        $sales_query = $conn->query("SELECT SUM(total_amount) as total_sales 
+                                     FROM order_list 
+                                     WHERE vendor_id = '{$vendor_id}' AND status = 4 AND DATE_FORMAT(date_created, '%Y-%m') = '{$month}'")
+                                     ->fetch_assoc();
         $total_sales = $sales_query['total_sales'] ? $sales_query['total_sales'] : 0;
 
         // Fetch commission rate for the vendor's user
@@ -28,17 +35,23 @@ while($vendor = $vendors->fetch_assoc()) {
 
         if ($existing_entry) {
             // Update existing entry
-            $conn->query("UPDATE vendor_commissions SET total_sales = '{$total_sales}', total_commission = '{$total_commission}' WHERE id = '{$existing_entry['id']}'");
+            $conn->query("UPDATE vendor_commissions 
+                          SET total_sales = '{$total_sales}', total_commission = '{$total_commission}' 
+                          WHERE id = '{$existing_entry['id']}'");
         } else {
             // Insert new entry
-            $conn->query("INSERT INTO vendor_commissions (vendor_id, month, total_sales, total_commission) VALUES ('{$vendor_id}', '{$month}', '{$total_sales}', '{$total_commission}')");
+            $conn->query("INSERT INTO vendor_commissions (vendor_id, month, total_sales, total_commission) 
+                          VALUES ('{$vendor_id}', '{$month}', '{$total_sales}', '{$total_commission}')");
         }
     }
 }
 ?>
+
+?>
+
 <?php 
 
-$apiKey = "2f745fa85d563da5adb87b6cd4b81caf";
+$apiKey = "";
 
 // Get the current date
 $currentDate = date('Y-m-d');
@@ -123,6 +136,7 @@ if ($result && mysqli_num_rows($result) > 0) {
         }
     }
 </script>
+
 
  <!DOCTYPE html>
 <html lang="en" class="" style="height: auto;">
@@ -789,7 +803,7 @@ window.__h82AlnkH6D91__("WyJwdWItNTIxNzI4NjU0NzM3NzY1NiIsW251bGwsbnVsbCxudWxsLCJ
 
     <!-- Bootstrap JS and dependencies -->
     <?php require_once('inc/footer.php') ?>
-      <!-- /.content-wrapper -->  </body>
+ </body>
 </html>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
@@ -805,3 +819,59 @@ window.__h82AlnkH6D91__("WyJwdWItNTIxNzI4NjU0NzM3NzY1NiIsW251bGwsbnVsbCxudWxsLCJ
     });
   });
 </script>
+<script>
+window.embeddedChatbotConfig = {
+chatbotId: "_dAhlOlaRSfSUoDyUUMmO",
+domain: "www.chatbase.co"
+}
+</script>
+<script
+src="https://www.chatbase.co/embed.min.js"
+chatbotId="_dAhlOlaRSfSUoDyUUMmO"
+domain="www.chatbase.co"
+defer>
+</script>
+    <script>
+        // Check for Notification permission
+        function requestNotificationPermission() {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        alert('You will receive notifications.');
+                    } else {
+                        alert('Notifications are blocked. Enable them in your browser settings.');
+                    }
+                });
+            }
+        }
+
+        // Fetch the latest order and notify the user
+        function fetchLatestOrder() {
+            fetch('fetch_latest_order.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        new Notification('New Order Update', {
+                            body: `Order ID: ${data.id}, Updated at: ${data.date_updated}`
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching order:', error));
+        }
+
+        document.getElementById('notify-btn').addEventListener('click', () => {
+            requestNotificationPermission();
+        });
+
+        // Poll for the latest order every 10 seconds
+        setInterval(() => {
+            if (Notification.permission === 'granted') {
+                fetchLatestOrder();
+            }
+        }, 10000);
+
+        // Optionally fetch immediately on page load
+        if (Notification.permission === 'granted') {
+            fetchLatestOrder();
+        }
+    </script>

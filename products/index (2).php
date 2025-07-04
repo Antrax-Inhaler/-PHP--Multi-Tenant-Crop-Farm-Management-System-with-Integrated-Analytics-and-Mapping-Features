@@ -128,7 +128,11 @@ $category_ids = isset($_GET['cids']) ? $_GET['cids'] : 'all';
         <div class="card-body">
                     <div class="container-fluid">
     
-                            
+                    <style>
+    .row{
+        justify-content: center !important;
+    }
+</style>
               
                         <div class="row" id="product_list">
                             <?php 

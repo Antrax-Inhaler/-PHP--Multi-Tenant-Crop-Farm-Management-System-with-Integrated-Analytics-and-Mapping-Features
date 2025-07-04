@@ -1,120 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body{
-        padding: 0;
-        font-family: Poppins, Arial, "Helvetica Neue", Helvetica, sans-serif;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print File without Preview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .print-area {
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        .btn-print {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
 
-    }
-    .rectangle1 {
-      width: 100%;
-      height: 400px;
-      background: linear-gradient(to right, rgb(53, 53, 53) 30%, #15ff00);
-      display: flex;
-      justify-content: space-between;
-      
-    }
-    .rectangle2 {
-      width: 100%;
-      height: 400px;
-      background: linear-gradient(to left, rgb(255, 255, 255) 30%, #00eeff);
-      display: flex;
-      justify-content: space-between;
-      
-    }
-    img{
-        height: 100%;
+<h1>Print File Demo</h1>
+<div class="print-area">
+    <h2>Content to Print</h2>
+    <p>This is a sample content that will be printed. You can replace this text with the content from your file.</p>
+</div>
+<button class="btn-print" onclick="printContent()">Print Without Preview</button>
 
+<script>
+    function printContent() {
+        // JavaScript print functionality
+        window.print(); // This will open the print dialog
     }
-    .strip{
-      width: 100%;
-      height: 10px;
-      background: linear-gradient(to bottom, rgb(20, 20, 20) 10%, #0eefffd7);
-    }
-    .statement{
-      color: #2ddc9a;
-    }
-    .bl{
-      color: black;
-      text-align: right;
-    }
-    .lefty{
-      padding: 20px;
+</script>
 
-    }
-    .join {
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 20px;
-      background-color: #2ddc9a; /* Base color */
-      color: white;
-      text-decoration: none;
-      text-transform: uppercase;
-      font-weight: bold;
-      position: relative; /* Required for animation */
-      overflow: hidden; /* Prevents box-shadow from overflowing */
-      box-shadow: 0 5px 15px rgba(45, 220, 154, 0.4); /* Soft shadow */
-      animation: bounceAnimation 1s ease-in-out infinite; /* Bouncing animation */
-    }
-
-    @keyframes bounceAnimation {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px); /* Adjust bounce height as needed */
-      }
-    }
-
-    .join::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
-      border-radius: inherit;
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
-    }
-
-    .join:hover::before {
-      opacity: 1; /* Show glossy effect on hover */
-    }
-
-    .join:hover {
-      transform: translateY(0); /* Reset transform on hover */
-      animation: none; /* Stop bouncing animation on hover */
-    }
-  </style>
-  <div class="strip"></div>
-  <div class="rectangle1">
-    <div class="lefty">
-      <div class="statement">
-         <h1>Explore Agronet!</h1> a revolutionary platform that transforms agriculture management. Seamlessly connect with local farmers and gain access to fresh produce. Our tools enable efficient crop management, financial transparency, and location mapping, promoting sustainable farming practices. Join us in revolutionizing agriculture for a brighter, greener future!
-      </div>
-      <a class="join" href="./vendor">Join Now!</a>
-    </div>
-    <div>
-      <img src="uploads/manong2.png" alt="">
-    </div>
-  </div>
-  <div class="strip"></div>
-  <div class="rectangle2">
-    <div><img src="uploads/ateprutas2.png" alt=""></div>
-    <div>
-      <div class="statement bl"> <h1>From Seed to Sale</h1> Our platform empowers farmers at every step, offering tools for efficient crop management, transparent financial tracking, and seamless access to a broad customer base through our integrated ecommerce marketplace. Maximize your harvest and profitability with AgroNet!</div>
-    </div>
-  </div>
-  <div class="strip"></div>
-  <div class="rectangle1">
-    <div class="lefty"><div class="statement"><h1>Support Farmers</h1>Every purchase directly supports local farmers, sustainable agriculture practices, and community growth. Shop now to make a difference in farming communities!</div></div>
-    <div><img src="uploads/basketman.png" alt=""></div>
-  </div>
-  <div class="strip"></div>
-
+</body>
 </html>

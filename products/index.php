@@ -508,6 +508,11 @@ input[type="search"] {
     </div>
     <?php endwhile; ?>
 </div>
+<style>
+    .row{
+        justify-content: center !important;
+    }
+</style>
 <div class="card-body">
     <div class="container-fluid">
         <div class="row" id="product_list">

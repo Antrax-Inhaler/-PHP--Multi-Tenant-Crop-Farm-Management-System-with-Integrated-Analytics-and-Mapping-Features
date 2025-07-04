@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Locations Map</title>
   <style>
     /* Set map container size */
     #map {
@@ -23,6 +29,7 @@
       text-decoration: none;
       color: #fff; /* Link text color */
       font-size: 16px;
+      margin: 0 10px;
       display: flex;
       align-items: center;
     }
@@ -61,67 +68,24 @@
 .active{
 
   color: #2ddc9a;}
-  .container-fluid{
-    padding-right: 0px;
-    padding-left: 0px;
-  }
-  .centerer{
-        width: 100% !important;
-    }
   </style>
+</head>
+<body>
   <!-- Navigation header -->
   <div id="nav-header">
   <div class="flex" >
       <a href="<?php echo base_url ?>vendor/?page=map/map" class="nav-link active">
-        <div class="icon"><i class="fas fa-map"></i></div>
+        <span class="icon"><i class="fas fa-map"></i></span>
         <div class="labelmap">Farm Map</div>
       </a>
-
-      <div style="padding: 10px; display: flex; justify-content: flex-start; ">
-  <select id="cropNameSelect">
-    <option value="">Select Crop Name</option>
-    <?php
-      // Fetch unique crop names from the database and group similar names
-      $cropNameSql = "SELECT DISTINCT Name FROM crop WHERE delete_flag = 0 AND is_deleted = 0";
-      $cropNameResult = $conn->query($cropNameSql);
-
-      if ($cropNameResult->num_rows > 0) {
-        while($nameRow = $cropNameResult->fetch_assoc()) {
-          echo "<option value='{$nameRow['Name']}'>{$nameRow['Name']}</option>";
-        }
-      }
-    ?>
-  </select>
-
-  <select id="cropTypeSelect" disabled>
-    <option value="">Select Crop Type</option>
-    <!-- Options will be populated based on selected crop name -->
-  </select>
-
-  <div>
-    <label for="plantingDateFrom">Planting Date From:</label>
-    <input type="date" id="plantingDateFrom">
-  </div>
-
-  <div>
-    <label for="plantingDateTo">Planting Date To:</label>
-    <input type="date" id="plantingDateTo">
-  </div>
-
-  <div>
-    <label for="datePlantedFrom">Date Planted From:</label>
-    <input type="date" id="datePlantedFrom">
-  </div>
-
-  <div>
-    <label for="datePlantedTo">Date Planted To:</label>
-    <input type="date" id="datePlantedTo">
-  </div>
-  <input type="number" id="sizeOfPlantationFrom" placeholder="Size Of Plantation From" step="any">
-  <input type="number" id="sizeOfPlantationTo" placeholder="Size Of Plantation To" step="any">
-  <button id="filterButton">Filter</button>
-</div>
-
+      <a href="<?php echo base_url ?>vendor/?page=map/farm-pestanddisease" class="nav-link ">
+        <span class="icon"><i class="fas fa-bug"></i></span>
+        <div class="labelmap">Pests & Diseases</div>       
+      </a>
+      <a href="<?php echo base_url ?>vendor/?page=map/farm-harvest" class="nav-link">
+        <span class="icon"><i class="fas fa-seedling"></i></span>
+        <div class="labelmap">Harvest</div>
+      </a>
     </div>
     <input type="text" id="searchInput" placeholder="Search by crop name, type, planting date, etc.">
   </div>
@@ -130,224 +94,145 @@
   <div id="map"></div>
 
   <script>
-// Initialize the map
-function initMap() {
-    let markers = [];
-    
-    // Create a map centered at a default location
-    const map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 13.232900, lng: 121.156900 }, // Default center coordinates
+    // Initialize the map
+    function initMap() {
+      // Create a map centered at a default location
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 13.0, lng: 122.0 }, // Default center coordinates (adjust as needed)
         zoom: 12, // Adjust the zoom level as needed
-    });
+      });
 
-    // Custom marker icons
-    const plantedMarker = '../uploads/marker100.png';
-    const plannedMarker = '../uploads/markerhand.png'; // Different icon for planned crops
+      // Custom marker icon
+      const customMarker = '../uploads/marker100.png';
 
-    // Arrays to store planted and planned crop locations
-    const plantedCrops = [];
-    const plannedCrops = [];
+      // Array to store farm locations and associated crops with information fetched from PHP
+      const farmData = [
+        <?php
+          // Your PHP code to fetch farm locations and associated crops with information based on the SQL query
+          $user_id = $_settings->userdata('id');
+          $sql = "SELECT c.Name as CropName, c.Type, c.PlannedPlantingDate, c.DatePlanted, c.SizeOfPlantation, c.Description, c.Picture1, f.Name as FarmName, f.Latitude as FarmLat, f.Longitude as FarmLng
+                  FROM crop c
+                  INNER JOIN farm f ON c.FarmId = f.Id
+                  INNER JOIN vendor_list v ON c.VendorId = v.id
+                  WHERE v.delete_flag = 0
+                  ORDER BY f.Name ASC, c.Name ASC";
 
-    <?php
-    // Fetch both planted and planned crops in a single query
-    $sql = "SELECT c.Id as CropId, c.Name as CropName, c.Type, c.PlannedPlantingDate, 
-                   c.DatePlanted, c.SizeOfPlantation, c.Description, c.Picture1, 
-                   c.Latitude, c.Longitude, v.contact as ContactNumber, v.facebook as Facebook
-            FROM crop c
-            INNER JOIN vendor_list v ON c.VendorId = v.id
-            WHERE c.delete_flag = 0 AND c.Latitude IS NOT NULL AND c.Longitude IS NOT NULL
-            ORDER BY c.Name ASC";
+          $result = $conn->query($sql);
 
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            if ($row['DatePlanted']) {
-                // Planted crops
-                echo "plantedCrops.push({ cropId: {$row['CropId']}, cropName: '{$row['CropName']}', cropDetails: " . json_encode([
-                    "Type" => $row["Type"],
-                    "PlannedPlantingDate" => $row["PlannedPlantingDate"],
-                    "DatePlanted" => $row["DatePlanted"],
-                    "SizeOfPlantation" => $row["SizeOfPlantation"],
-                    "Description" => $row["Description"],
-                    "Picture1" => $row["Picture1"]
-                ]) . ", contactNumber: '{$row['ContactNumber']}', facebook: '{$row['Facebook']}', lat: {$row['Latitude']}, lng: {$row['Longitude']} });\n";
-            } else {
-                // Planned crops (without a DatePlanted)
-                echo "plannedCrops.push({ cropId: {$row['CropId']}, cropName: '{$row['CropName']}', cropDetails: " . json_encode([
-                    "Type" => $row["Type"],
-                    "PlannedPlantingDate" => $row["PlannedPlantingDate"],
-                    "SizeOfPlantation" => $row["SizeOfPlantation"],
-                    "Description" => $row["Description"],
-                    "Picture1" => $row["Picture1"]
-                ]) . ", contactNumber: '{$row['ContactNumber']}', facebook: '{$row['Facebook']}', lat: {$row['Latitude']}, lng: {$row['Longitude']} });\n";
+          if ($result->num_rows > 0) {
+            // Initialize an array to hold farm data
+            $farmDataArray = [];
+            while($row = $result->fetch_assoc()) {
+              // Group crops by farm
+              $farmDataArray[$row["FarmName"]][] = [
+                "cropName" => $row["CropName"],
+                "cropDetails" => [
+                  "Type" => $row["Type"],
+                  "PlannedPlantingDate" => $row["PlannedPlantingDate"],
+                  "DatePlanted" => $row["DatePlanted"],
+                  "SizeOfPlantation" => $row["SizeOfPlantation"],
+                  "Description" => $row["Description"],
+                  "Picture1" => $row["Picture1"]
+                ],
+                "lat" => $row["FarmLat"],
+                "lng" => $row["FarmLng"]
+              ];
             }
-        }
-    } else {
-        echo "plantedCrops = []; plannedCrops = [];"; // Default empty data
-    }
-    ?>
 
-    // Function to generate markers and info windows
-    function generateMarkers(cropArray, map, icon) {
-        cropArray.forEach((crop) => {
-            const cropMarker = new google.maps.Marker({
-                position: { lat: parseFloat(crop.lat), lng: parseFloat(crop.lng) },
-                map: map,
-                title: crop.cropName,
-                icon: icon,
-            });
+            // Generate JavaScript array for farm data
+            foreach ($farmDataArray as $farmName => $crops) {
+              echo "{ farmName: '{$farmName}', crops: [";
+              foreach ($crops as $crop) {
+                echo "{ cropName: '{$crop['cropName']}', cropDetails: " . json_encode($crop['cropDetails']) . ", lat: {$crop['lat']}, lng: {$crop['lng']} },";
+              }
+              echo "] },\n";
+            }
+          } else {
+            echo "{ farmName: 'No farms found', crops: [] }"; // Default empty data
+          }
+        ?>
+      ];
 
-            const infowindow = new google.maps.InfoWindow({
-                content: generateInfoWindowContent(crop),
-            });
+      // Array to store markers for filtering
+      const markers = [];
 
-            cropMarker.infowindow = infowindow; // Associate infowindow with marker
-
-            cropMarker.addListener("click", () => {
-                infowindow.open(map, cropMarker);
-            });
-
-            // Store marker in markers array
-            markers.push({ marker: cropMarker, crop });
+      // Add farm markers and crop info windows to the map
+      farmData.forEach((farm) => {
+        const farmMarker = new google.maps.Marker({
+          position: { lat: parseFloat(farm.crops[0].lat), lng: parseFloat(farm.crops[0].lng) }, // Use first crop coordinates
+          map: map,
+          title: farm.farmName,
+          icon: customMarker, // Use custom marker icon
         });
-    }
 
-    // Generate markers for planted crops
-    generateMarkers(plantedCrops, map, plantedMarker);
+        const infowindow = new google.maps.InfoWindow({
+          content: generateInfoWindowContent(farm),
+        });
 
-    // Generate markers for planned crops
-    generateMarkers(plannedCrops, map, plannedMarker);
+        farmMarker.addListener("click", () => {
+          infowindow.open(map, farmMarker);
+        });
 
-    // Function to generate info window content for crops
-    function generateInfoWindowContent(crop) {
-    return `
-        <div class="card mt-3">
-            <div class="card-body">
+        // Push marker to markers array for filtering
+        markers.push({ marker: farmMarker, farm });
+      });
+
+      // Function to generate info window content for farms and associated crops
+      function generateInfoWindowContent(farm) {
+        let content = `<strong>${farm.farmName}</strong><br>`;
+        farm.crops.forEach((crop) => {
+          content += `
+            <div class="card mt-3">
+              <div class="card-body">
                 <div class="row">
-                    <div class="col-md-4">
-                        <img src="../${crop.cropDetails.Picture1}" alt="Crop Image" width="100">
-                    </div>
-                    <div class="col-md-8">
-                        <strong>${crop.cropName}</strong><br>
-                        <ul class="list-unstyled">
-                            <li><strong>Type:</strong> ${crop.cropDetails.Type}</li>
-                            <li><strong>Planned Planting Date:</strong> ${crop.cropDetails.PlannedPlantingDate}</li>
-                            <li>${crop.cropDetails.DatePlanted ? `<strong>Date Planted:</strong> ${crop.cropDetails.DatePlanted}` : ''}</li>
-                            <li><strong>Size of Plantation:</strong> ${crop.cropDetails.SizeOfPlantation}</li>
-                            <li><strong>Description:</strong> ${crop.cropDetails.Description}</li>
-                            <li>
-                                <strong>Contact:</strong> 
-                                <a href="tel:${crop.contactNumber}" style="color: blue; text-decoration: underline;">
-                                    <i class="fa fa-phone"></i> ${crop.contactNumber}
-                                </a>
-                            </li>
-                            <li><a href="./?page=result/crop_detailes&id=${crop.cropId}" class="btn btn-sm btn-primary">View Details</a></li>
-                            <li> 
-                                <a href="https://www.facebook.com/${crop.facebook}" class="btn btn-sm btn-info">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                  <div class="col-md-4">
+                    <img src="${crop.cropDetails.Picture1}" alt="Crop Image" width="100">
+                  </div>
+                  <div class="col-md-8">
+                    <strong>${crop.cropName}</strong><br>
+                    <ul class="list-unstyled">
+                      <li><strong title="Type">Type:</strong> ${crop.cropDetails.Type}</li>
+                      <li><strong title="Planned Planting Date">Planned Planting Date:</strong> ${crop.cropDetails.PlannedPlantingDate}</li>
+                      <li><strong title="Date Planted">Date Planted:</strong> ${crop.cropDetails.DatePlanted}</li>
+                      <li><strong title="Size of Plantation">Size of Plantation:</strong> ${crop.cropDetails.SizeOfPlantation}</li>
+                      <li><strong title="Description">Description:</strong> ${crop.cropDetails.Description}</li>
+                    </ul>
+                  </div>
                 </div>
+              </div>
             </div>
-        </div>
-    `;
-}
+          `;
+        });
+        return content;
+      }
 
-document.getElementById('filterButton').addEventListener('click', function() {
-    const selectedCropName = document.getElementById('cropNameSelect').value.toLowerCase().trim();
-    const selectedCropType = document.getElementById('cropTypeSelect').value.toLowerCase().trim();
+      // Function to filter markers based on search input
+      document.getElementById('searchInput').addEventListener('input', function() {
+        const searchQuery = this.value.toLowerCase().trim();
+        markers.forEach((item) => {
+          const { marker, farm } = item;
+          const farmName = farm.farmName.toLowerCase();
+          let found = false;
 
-    const plantingDateFrom = document.getElementById('plantingDateFrom').value ? new Date(document.getElementById('plantingDateFrom').value) : null;
-    const plantingDateTo = document.getElementById('plantingDateTo').value ? new Date(document.getElementById('plantingDateTo').value) : null;
+          farm.crops.forEach((crop) => {
+            const cropName = crop.cropName.toLowerCase();
+            const cropType = crop.cropDetails.Type.toLowerCase();
+            const plantingDate = crop.cropDetails.PlannedPlantingDate.toLowerCase();
 
-    const datePlantedFrom = document.getElementById('datePlantedFrom').value ? new Date(document.getElementById('datePlantedFrom').value) : null;
-    const datePlantedTo = document.getElementById('datePlantedTo').value ? new Date(document.getElementById('datePlantedTo').value) : null;
+            if (cropName.includes(searchQuery) || cropType.includes(searchQuery) || plantingDate.includes(searchQuery)) {
+              found = true;
+            }
+          });
 
-    const sizeOfPlantationFrom = document.getElementById('sizeOfPlantationFrom').value ? parseFloat(document.getElementById('sizeOfPlantationFrom').value) : null;
-    const sizeOfPlantationTo = document.getElementById('sizeOfPlantationTo').value ? parseFloat(document.getElementById('sizeOfPlantationTo').value) : null;
-
-    markers.forEach(({ marker, crop }) => {
-        let matchesName = true;
-        let matchesType = true;
-        let matchesPlantingDate = true;
-        let matchesDatePlanted = true;
-        let matchesSizeOfPlantation = true;
-
-        if (selectedCropName) {
-            matchesName = crop.cropName.toLowerCase().trim() === selectedCropName;
-        }
-        if (selectedCropType) {
-            matchesType = crop.cropDetails.Type.toLowerCase().trim() === selectedCropType;
-        }
-        if (plantingDateFrom || plantingDateTo) {
-            const cropPlantingDate = crop.cropDetails.PlannedPlantingDate ? new Date(crop.cropDetails.PlannedPlantingDate) : null;
-            matchesPlantingDate = cropPlantingDate && (!plantingDateFrom || cropPlantingDate >= plantingDateFrom) && (!plantingDateTo || cropPlantingDate <= plantingDateTo);
-        }
-        if (datePlantedFrom || datePlantedTo) {
-            const cropDatePlanted = crop.cropDetails.DatePlanted ? new Date(crop.cropDetails.DatePlanted) : null;
-            matchesDatePlanted = cropDatePlanted && (!datePlantedFrom || cropDatePlanted >= datePlantedFrom) && (!datePlantedTo || cropDatePlanted <= datePlantedTo);
-        }
-        if (sizeOfPlantationFrom || sizeOfPlantationTo) {
-            const cropSize = crop.cropDetails.SizeOfPlantation ? parseFloat(crop.cropDetails.SizeOfPlantation) : null;
-            matchesSizeOfPlantation = cropSize !== null && (!sizeOfPlantationFrom || cropSize >= sizeOfPlantationFrom) && (!sizeOfPlantationTo || cropSize <= sizeOfPlantationTo);
-        }
-
-        // Show marker if it matches name and type, and any of the date or size filters
-        // Also show if only crop name/type is selected without filters
-        if (matchesName && matchesType && (matchesPlantingDate || matchesDatePlanted || matchesSizeOfPlantation || (!plantingDateFrom && !plantingDateTo && !datePlantedFrom && !datePlantedTo && !sizeOfPlantationFrom && !sizeOfPlantationTo))) {
-            marker.setVisible(true);
-        } else {
-            marker.setVisible(false);
-        }
-    });
-});
-
-
-
-
-
-}
-
-// Load the Google Maps API and initialize the map
-</script>
-
-<script>
-  document.getElementById('cropNameSelect').addEventListener('change', function() {
-    const selectedCropName = this.value;
-
-    if (selectedCropName) {
-        // Fetch the types for the selected crop name using AJAX
-        fetchCropTypes(selectedCropName);
-    } else {
-        document.getElementById('cropTypeSelect').innerHTML = '<option value="">Select Crop Type</option>';
-        document.getElementById('cropTypeSelect').disabled = true;
+          if (farmName.includes(searchQuery) || found) {
+            marker.setVisible(true); // Show marker if matches search
+          } else {
+            marker.setVisible(false); // Hide marker if does not match search
+          }
+        });
+      });
     }
-});
-
-function fetchCropTypes(cropName) {
-    const cropTypeSelect = document.getElementById('cropTypeSelect');
-    cropTypeSelect.disabled = false;
-    
-    // Clear existing options
-    cropTypeSelect.innerHTML = '<option value="">Select Crop Type</option>';
-    
-    // Fetch the crop types via AJAX
-    fetch(`map/fetch_crop_types.php?cropName=${cropName}`)
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                cropTypeSelect.appendChild(option);
-            });
-        })
-        .catch(error => console.error('Error fetching crop types:', error));
-}
-
-</script>
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap" async></script>
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap" async></script>
+</body>
+</html>

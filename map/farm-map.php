@@ -125,6 +125,22 @@
 .card{
   box-shadow: none;
 }
+#aiResponseModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+}
+
+#closeModal {
+    cursor: pointer;
+    float: right;
+    font-size: 20px;
+}
   </style>
 <div id="nav-header">
 <div class="flex">
@@ -146,6 +162,7 @@
 
   <div class="filter-container">
     <button id="filterToggleBtn">Filters</button>
+    <button id="aiFilterDropdownToggle" class="ml-2 btn btn-info">AI Recommendation</button>
 
     <div id="filterDropdown" class="filter-dropdown hidden bg-white p-4 border rounded shadow">
   <button id="closeFilterBtn" class="close btn btn-outline-secondary">&times;</button>
@@ -206,8 +223,75 @@
   <button id="filterButton" class="btn btn-primary">Filter</button>
 </div>
   </div>
+  <div id="aiFilterDropdown" class="filter-dropdown hidden bg-white p-4 border rounded shadow">
+    <button id="closeAIFilter" class="close btn btn-outline-secondary">&times;</button>
+<div class="form-group">
+    <label for="aiCropNameSelect">Select Crop Name:</label>
+    <select id="aiCropNameSelect" class="form-control">
+      <option value="">Select Crop Name</option>
+      <?php
+        $cropNameSql = "SELECT DISTINCT Name FROM crop WHERE delete_flag = 0 AND is_deleted = 0";
+        $cropNameResult = $conn->query($cropNameSql);
+        if ($cropNameResult->num_rows > 0) {
+          while($nameRow = $cropNameResult->fetch_assoc()) {
+            echo "<option value='{$nameRow['Name']}'>{$nameRow['Name']}</option>";
+          }
+        }
+      ?>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="aiCropTypeSelect">Select Crop Type:</label>
+    <select id="aiCropTypeSelect" class="form-control" disabled>
+      <option value="">Select Crop Type</option>
+    </select>
+</div>
+
+    <div class="form-group">
+      <label for="aiPlantingDateFrom">Planting Date From:</label>
+      <input type="date" id="aiPlantingDateFrom" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="aiPlantingDateTo">Planting Date To:</label>
+      <input type="date" id="aiPlantingDateTo" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="harvestAmount">Harvest Amount:</label>
+        <input type="number" id="harvestAmount" class="form-control" placeholder="Enter amount in kg">
+    </div>
+    <button id="aiFetchRecommendation" class="btn btn-success">Get Recommendation</button>
+  </div>
+</div>
+
+<!-- AI Recommendation Modal -->
+<div class="modal fade" id="aiRecommendationModal" tabindex="-1" aria-labelledby="aiRecommendationLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aiRecommendationLabel">AI Recommendation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="aiRecommendationResult">Fetching recommendation...</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   </div>
+</div>
+<!-- Modal HTML -->
+<div id="aiResponseModal" style="display:none;">
+    <div class="modal-content">
+        <span id="closeModal">&times;</span>
+        <h2>AI Response</h2>
+        <p id="loadingMessage">Loading...</p>
+        <p id="aiResponseText" style="display:none;"></p>
+    </div>
 </div>
 
   <!-- Map container -->
@@ -217,12 +301,13 @@
 // Initialize the map
 function initMap() {
     let markers = [];
-    
+    let polygons = []; // To store farm boundaries
+
     // Create a map centered at a default location
     const map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 13.232900, lng: 121.156900 }, // Default center coordinates
         zoom: 12, // Adjust the zoom level as needed
-         gestureHandling: 'greedy'
+        gestureHandling: 'greedy'
     });
 
     // Custom marker icons
@@ -232,14 +317,17 @@ function initMap() {
     // Arrays to store planted and planned crop locations
     const plantedCrops = [];
     const plannedCrops = [];
+    const farms = []; // To store farm boundary data
 
     <?php
-    // Fetch both planted and planned crops in a single query
+    // Fetch both planted and planned crops and farm boundaries in a single query
     $sql = "SELECT c.Id as CropId, c.Name as CropName, c.Type, c.PlannedPlantingDate, 
                    c.DatePlanted, c.SizeOfPlantation, c.Description, c.Picture1, 
-                   c.Latitude, c.Longitude, v.contact as ContactNumber, v.facebook as Facebook
+                   c.Latitude, c.Longitude, v.contact as ContactNumber, v.facebook as Facebook,
+                   f.boundary 
             FROM crop c
             INNER JOIN vendor_list v ON c.VendorId = v.id
+            LEFT JOIN farm f ON f.Id = c.FarmId
             WHERE c.delete_flag = 0 AND c.Latitude IS NOT NULL AND c.Longitude IS NOT NULL
             ORDER BY c.Name ASC";
 
@@ -258,7 +346,7 @@ function initMap() {
                     "Picture1" => $row["Picture1"]
                 ]) . ", contactNumber: '{$row['ContactNumber']}', facebook: '{$row['Facebook']}', lat: {$row['Latitude']}, lng: {$row['Longitude']} });\n";
             } else {
-                // Planned crops (without a DatePlanted)
+                // Planned crops
                 echo "plannedCrops.push({ cropId: {$row['CropId']}, cropName: '{$row['CropName']}', cropDetails: " . json_encode([
                     "Type" => $row["Type"],
                     "PlannedPlantingDate" => $row["PlannedPlantingDate"],
@@ -267,9 +355,14 @@ function initMap() {
                     "Picture1" => $row["Picture1"]
                 ]) . ", contactNumber: '{$row['ContactNumber']}', facebook: '{$row['Facebook']}', lat: {$row['Latitude']}, lng: {$row['Longitude']} });\n";
             }
+
+            if ($row['boundary']) {
+                // Store farm boundaries
+                echo "farms.push({ farmName: '{$row['CropName']}', boundary: {$row['boundary']} });\n";
+            }
         }
     } else {
-        echo "plantedCrops = []; plannedCrops = [];"; // Default empty data
+        echo "plantedCrops = []; plannedCrops = []; farms = [];";
     }
     ?>
 
@@ -293,8 +386,26 @@ function initMap() {
                 infowindow.open(map, cropMarker);
             });
 
-            // Store marker in markers array
             markers.push({ marker: cropMarker, crop });
+        });
+    }
+
+    // Function to create farm boundaries
+    function generateFarmBoundaries(farms, map) {
+        farms.forEach((farm) => {
+            const farmBoundaryCoords = farm.boundary.map(coord => ({ lat: coord.lat, lng: coord.lng }));
+
+            const farmPolygon = new google.maps.Polygon({
+                paths: farmBoundaryCoords,
+                strokeColor: "#FF0000",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 0.35
+            });
+
+            farmPolygon.setMap(map);
+            polygons.push(farmPolygon); // Store polygon in polygons array
         });
     }
 
@@ -304,99 +415,33 @@ function initMap() {
     // Generate markers for planned crops
     generateMarkers(plannedCrops, map, plannedMarker);
 
-    // Function to generate info window content for crops
+    // Generate farm boundaries
+    generateFarmBoundaries(farms, map);
+
+    // Info window content
     function generateInfoWindowContent(crop) {
-    return `
-        <div class="">
-            <div class="">
-                <div class="row">
-                    <div class="col-md-4">
-                        <img src="${crop.cropDetails.Picture1}" alt="Crop Image" width="100">
-                    </div>
-                    <div class="col-md-8">
-                        <strong>${crop.cropName}</strong><br>
-                        <ul class="list-unstyled">
-                            <li><strong>Type:</strong> ${crop.cropDetails.Type}</li>
-                            <li><strong>Planned Planting Date:</strong> ${crop.cropDetails.PlannedPlantingDate}</li>
-                            <li>${crop.cropDetails.DatePlanted ? `<strong>Date Planted:</strong> ${crop.cropDetails.DatePlanted}` : ''}</li>
-                            <li><strong>Size of Plantation:</strong> ${crop.cropDetails.SizeOfPlantation}</li>
-                            <li><strong>Description:</strong> ${crop.cropDetails.Description}</li>
-                            <li>
-                                <strong>Contact:</strong> 
-                                <a href="tel:${crop.contactNumber}" style="color: blue; text-decoration: underline;">
-                                    <i class="fa fa-phone"></i> ${crop.contactNumber}
-                                </a>
-                            </li>
-                            <li><a href="./?page=map/crop-preview&id=${crop.cropId}" style="background-color: green;" class="btn btn-sm btn-primary">View Details</a></li>
-                            <li> 
-                                <a href="https://www.facebook.com/${crop.facebook}" class="btn btn-sm btn-info">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+        return `
+            <div>
+                <strong>${crop.cropName}</strong><br>
+                <ul>
+                    <li><strong>Type:</strong> ${crop.cropDetails.Type}</li>
+                    <li><strong>Planned Planting Date:</strong> ${crop.cropDetails.PlannedPlantingDate}</li>
+                    ${crop.cropDetails.DatePlanted ? `<li><strong>Date Planted:</strong> ${crop.cropDetails.DatePlanted}</li>` : ''}
+                    <li><strong>Size of Plantation:</strong> ${crop.cropDetails.SizeOfPlantation}</li>
+                    <li><strong>Description:</strong> ${crop.cropDetails.Description}</li>
+                    <li>
+                        <strong>Contact:</strong> <a href="tel:${crop.contactNumber}">${crop.contactNumber}</a>
+                    </li>
+                    <li><a href="./?page=map/crop-preview&id=${crop.cropId}" class="btn btn-sm btn-primary">View Details</a></li>
+                    <li><a href="https://www.facebook.com/${crop.facebook}" class="btn btn-sm btn-info"><i class="fab fa-facebook-f"></i></a></li>
+                </ul>
             </div>
-        </div>
-    `;
-}
-
-document.getElementById('filterButton').addEventListener('click', function() {
-    const selectedCropName = document.getElementById('cropNameSelect').value.toLowerCase().trim();
-    const selectedCropType = document.getElementById('cropTypeSelect').value.toLowerCase().trim();
-
-    const plantingDateFrom = document.getElementById('plantingDateFrom').value ? new Date(document.getElementById('plantingDateFrom').value) : null;
-    const plantingDateTo = document.getElementById('plantingDateTo').value ? new Date(document.getElementById('plantingDateTo').value) : null;
-
-    const datePlantedFrom = document.getElementById('datePlantedFrom').value ? new Date(document.getElementById('datePlantedFrom').value) : null;
-    const datePlantedTo = document.getElementById('datePlantedTo').value ? new Date(document.getElementById('datePlantedTo').value) : null;
-
-    const sizeOfPlantationFrom = document.getElementById('sizeOfPlantationFrom').value ? parseFloat(document.getElementById('sizeOfPlantationFrom').value) : null;
-    const sizeOfPlantationTo = document.getElementById('sizeOfPlantationTo').value ? parseFloat(document.getElementById('sizeOfPlantationTo').value) : null;
-
-    markers.forEach(({ marker, crop }) => {
-        let matchesName = true;
-        let matchesType = true;
-        let matchesPlantingDate = true;
-        let matchesDatePlanted = true;
-        let matchesSizeOfPlantation = true;
-
-        if (selectedCropName) {
-            matchesName = crop.cropName.toLowerCase().trim() === selectedCropName;
-        }
-        if (selectedCropType) {
-            matchesType = crop.cropDetails.Type.toLowerCase().trim() === selectedCropType;
-        }
-        if (plantingDateFrom || plantingDateTo) {
-            const cropPlantingDate = crop.cropDetails.PlannedPlantingDate ? new Date(crop.cropDetails.PlannedPlantingDate) : null;
-            matchesPlantingDate = cropPlantingDate && (!plantingDateFrom || cropPlantingDate >= plantingDateFrom) && (!plantingDateTo || cropPlantingDate <= plantingDateTo);
-        }
-        if (datePlantedFrom || datePlantedTo) {
-            const cropDatePlanted = crop.cropDetails.DatePlanted ? new Date(crop.cropDetails.DatePlanted) : null;
-            matchesDatePlanted = cropDatePlanted && (!datePlantedFrom || cropDatePlanted >= datePlantedFrom) && (!datePlantedTo || cropDatePlanted <= datePlantedTo);
-        }
-        if (sizeOfPlantationFrom || sizeOfPlantationTo) {
-            const cropSize = crop.cropDetails.SizeOfPlantation ? parseFloat(crop.cropDetails.SizeOfPlantation) : null;
-            matchesSizeOfPlantation = cropSize !== null && (!sizeOfPlantationFrom || cropSize >= sizeOfPlantationFrom) && (!sizeOfPlantationTo || cropSize <= sizeOfPlantationTo);
-        }
-
-        // Show marker if it matches name and type, and any of the date or size filters
-        // Also show if only crop name/type is selected without filters
-        if (matchesName && matchesType && (matchesPlantingDate || matchesDatePlanted || matchesSizeOfPlantation || (!plantingDateFrom && !plantingDateTo && !datePlantedFrom && !datePlantedTo && !sizeOfPlantationFrom && !sizeOfPlantationTo))) {
-            marker.setVisible(true);
-        } else {
-            marker.setVisible(false);
-        }
-    });
-});
-
-
-
-
-
+        `;
+    }
 }
 
 // Load the Google Maps API and initialize the map
+
 </script>
 
 <script>
@@ -434,20 +479,194 @@ function fetchCropTypes(cropName) {
 }
 
 </script>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('aiCropNameSelect').addEventListener('change', function() {
+    const selectedCropName = this.value;
+
+    if (selectedCropName) {
+        // Fetch the types for the selected crop name using AJAX
+        fetchAiCropTypes(selectedCropName);
+    } else {
+        document.getElementById('aiCropTypeSelect').innerHTML = '<option value="">Select Crop Type</option>';
+        document.getElementById('aiCropTypeSelect').disabled = true;
+    }
+});
+
+function fetchAiCropTypes(cropName) {
+    const aiCropTypeSelect = document.getElementById('aiCropTypeSelect');
+    aiCropTypeSelect.disabled = false;
+    
+    // Clear existing options
+    aiCropTypeSelect.innerHTML = '<option value="">Select Crop Type</option>';
+    
+    // Fetch the crop types via AJAX
+    fetch(`map/fetch_crop_types.php?cropName=${cropName}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                aiCropTypeSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching crop types:', error));
+}
+
+</script>
+<script>
+document.getElementById('aiFetchRecommendation').addEventListener('click', () => {
+    const cropName = document.getElementById('aiCropNameSelect').value;
+    const cropType = document.getElementById('aiCropTypeSelect').value;
+    const plantingDateFrom = document.getElementById('aiPlantingDateFrom').value;
+    const plantingDateTo = document.getElementById('aiPlantingDateTo').value;
+    const harvestAmount = document.getElementById('harvestAmount').value;
+    const aiResponseModal = document.getElementById('aiResponseModal');
+
+    if (!aiResponseModal) {
+        console.error("aiResponseModal element is missing in the DOM");
+        return;
+    }
+
+    if (!cropName || !cropType || !plantingDateFrom || !plantingDateTo || !harvestAmount) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    const cropFilter = {
+        cropName,
+        cropType,
+        plantingDateFrom,
+        plantingDateTo,
+        harvestAmount
+    };
+
+    $.ajax({
+        url: 'map/fetch_filtered_crops.php',
+        method: 'POST',
+        data: cropFilter,
+        dataType: 'json',
+        success: (crops) => {
+            if (crops.length === 0) {
+                alert("No crops match the given criteria.");
+                return;
+            }
+
+            let cropListMessage = 'Based on your criteria, here are some crops you can consider:';
+            crops.forEach(crop => {
+                cropListMessage += `<br>- ${crop.Name} (${crop.Type}), Plantation Size: ${crop.SizeOfPlantation} hectares, Location: ${crop.Latitude}, ${crop.Longitude}`;
+            });
+
+            const message = `
+                I am looking to purchase crops based on the following needs:
+                Planting between ${plantingDateFrom} and ${plantingDateTo}. Explain why.
+                Here is the filtered list of available crops for your reference: 
+                ${cropListMessage}.
+                
+                Include recommended crop IDs in this format: -{{1, 2, 3}}-
+            `;
+
+            aiResponseModal.style.display = "block";
+            document.getElementById('loadingMessage').style.display = "block";
+            document.getElementById('aiResponseText').style.display = "none";
+
+            $.ajax({
+                url: 'map/ai.php',
+                method: 'POST',
+                data: { message },
+                dataType: 'json',
+                success: (response) => {
+                    const aiResponse = response.content.replace(/\n/g, '<br>')
+                        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                        .replace(/(?<!\d)(\d+)\.\s/g, '<br>$1. ');
+
+                        const cropIdMatch = aiResponse.match(/-{{\s*([\d,\s]+)\s*}}-/);
+                        if (cropIdMatch) {
+                        const cropIds = cropIdMatch[1].split(',').map(id => id.trim());
+                        $.ajax({
+                            url: 'map/fetch_crop_details.php',
+                            method: 'POST',
+                            data: { cropIds },
+                            dataType: 'json',
+                            success: (crops) => {
+                                const cropCardsContainer = document.getElementById('cropCardsContainer');
+                                cropCardsContainer.innerHTML = '';
+                                crops.forEach(crop => {
+                                const cropCard = document.createElement('div');
+                                cropCard.className = 'crop-card';
+                                cropCard.innerHTML = `
+                                    <h3>${crop.Name} (${crop.Type})</h3>
+                                    <p>Size: ${crop.SizeOfPlantation} hectares</p>
+                                    <p>Location: ${crop.Latitude}, ${crop.Longitude}</p>
+                                `;
+                                cropCardsContainer.appendChild(cropCard);
+                            });
+
+                            },
+                            error: (xhr, status, error) => {
+                                console.error("Error fetching crop details: ", status, error);
+                            }
+                        });
+                    }
+
+                    document.getElementById('loadingMessage').style.display = "none";
+                    document.getElementById('aiResponseText').style.display = "block";
+                    document.getElementById('aiResponseText').innerHTML = aiResponse.replace(/-{{[\d, ]+}}-/g, '');
+                },
+                error: (xhr, status, error) => {
+                    console.error("Error processing AI request: ", status, error);
+                    document.getElementById('loadingMessage').style.display = "none";
+                    document.getElementById('aiResponseText').style.display = "block";
+                    document.getElementById('aiResponseText').innerHTML = "Error processing your request.";
+                }
+            });
+        },
+        error: (xhr, status, error) => {
+            alert("Error fetching filtered crops.");
+            console.error("Error details:", status, error);
+        }
+    });
+});
+
+document.getElementById('closeModal').addEventListener('click', () => {
+    document.getElementById('aiResponseModal').style.display = "none";
+});
+
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Main filter elements
     const filterToggleBtn = document.getElementById('filterToggleBtn');
     const filterDropdown = document.getElementById('filterDropdown');
     const closeFilterBtn = document.getElementById('closeFilterBtn');
 
-    filterToggleBtn.addEventListener('click', function() {
-        filterDropdown.classList.toggle('hidden');
+    // AI filter elements
+    const aiFilterDropdownToggle = document.getElementById('aiFilterDropdownToggle');
+    const aiFilterDropdown = document.getElementById('aiFilterDropdown');
+    const closeAIFilter = document.getElementById('closeAIFilter');
+
+    // Toggle filter dropdown
+    filterToggleBtn?.addEventListener('click', function() {
+        filterDropdown?.classList.toggle('hidden');
     });
 
-    closeFilterBtn.addEventListener('click', function() {
-        filterDropdown.classList.add('hidden');
+    // Close filter dropdown
+    closeFilterBtn?.addEventListener('click', function() {
+        filterDropdown?.classList.add('hidden');
+    });
+
+    // Toggle AI filter dropdown
+    aiFilterDropdownToggle?.addEventListener('click', function() {
+        aiFilterDropdown?.classList.toggle('hidden');
+    });
+
+    // Close AI filter dropdown
+    closeAIFilter?.addEventListener('click', function() {
+        aiFilterDropdown?.classList.add('hidden');
     });
 });
 
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap" async></script>
+<script src="https://maps.googleapis.com/maps/api/js?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&callback=initMap" async></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

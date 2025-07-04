@@ -1071,7 +1071,7 @@ a { text-decoration: none; }
         </div>
         <div class="right-content">
         <span>
-        <?php echo ucwords($_settings->userdata('username')) ?>
+       Mindoreneong Farmer
         </span>
         <?php
 $is_verified = ($_settings->userdata('is_verified') == 0);
@@ -1080,7 +1080,7 @@ $is_verified = ($_settings->userdata('is_verified') == 0);
             <img class="img_verified" src="../uploads/verified.png" alt="Verified">
         <?php endif; ?>
         <label for="profile-picture-input" class="login-profile-container">
-    <button class="login-profile" style="background-image: url('<?php echo validate_image($_settings->userdata('avatar')) ?>');" type="button" data-toggle="dropdown">
+    <button class="login-profile" style="background-image: url('../uploads/vendors/459714580_897153015616335_2409911965148782311_n.jpg');" type="button" data-toggle="dropdown">
         <button style="display: none;" type="button" class="btn btn-rounded badge badge-light dropdown-toggle dropdown-icon">
             <span><img src="" class="img-circle elevation-2 user-img" alt="User Image"></span>
             <span class="ml-3"><?php echo ucwords($_settings->userdata('username')) ?></span>

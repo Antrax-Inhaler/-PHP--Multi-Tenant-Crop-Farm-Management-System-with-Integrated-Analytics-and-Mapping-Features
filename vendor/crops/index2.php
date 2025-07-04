@@ -553,7 +553,6 @@ function generateInfoWindowContent(farm) {
     <div id="map" class="sidebar">
         Map
     </div>
-    <h2 id="schedule-section" class="text-center mt-4 mb-4">Crop Planting Schedule</h2>
     <div id="schedule"  class="card crop-schedule-card" class="section">
     <div class="card-header">
         <h3>Crop Planting Schedule</h3>

@@ -29,9 +29,7 @@ $query = "
     FROM crop
     WHERE Name = '$cropName'
     AND is_deleted = 0
-    AND hide = 0
-    AND DatePlanted IS NULL
-";
+    AND hide = 0";
 
 $result = $conn->query($query);
 

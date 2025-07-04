@@ -3,109 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Map</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .table-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        table {
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-            background-color: #ffeb3b;
-        }
-        th {
-            background-color: #ffeb3b;
-            font-weight: bold;
-        }
-    </style>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+<style>
+    * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f7f9fc;
+    padding: 20px;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* Card Styles */
+.card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cards-section {
+    grid-column: span 2;
+    grid-row: span 1;
+}
+
+.balance-chart {
+    grid-column: span 2;
+    grid-row: span 1;
+}
+
+.quick-transfer {
+    grid-column: span 2;
+    grid-row: span 1;
+}
+
+.transactions {
+    grid-column: span 2;
+    grid-row: span 1;
+}
+
+.expedition {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.top-gainers {
+    grid-column: span 1;
+    grid-row: span 1;
+}
+
+.exchange-rates {
+    grid-column: span 1;
+    grid-row: span 1;
+}
+
+/* Responsive Design for Mobile */
+@media screen and (max-width: 768px) {
+    .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cards-section, .balance-chart, .expedition {
+        grid-column: span 2;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        grid-column: span 1;
+    }
+}
+
+</style>
 <body>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th colspan="2"></th>
-                    <th>234</th>
-                    <th>264</th>
-                    <th>294</th>
-                    <th>324</th>
-                    <th>354</th>
-                    <th>384</th>
-                    <th>414</th>
-                    <th>444</th>
-                    <th>474</th>
-                    <th>504</th>
-                    <th>534</th>
-                    <th>565</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th>1</th>
-                    <td>30</td>
-                    <td>60</td>
-                    <td>89</td>
-                    <td>118</td>
-                    <td>147</td>
-                    <td>176</td>
-                    <td>205</td>
-                    <td>235</td>
-                    <td>265</td>
-                    <td>295</td>
-                    <td>325</td>
-                    <td>355</td>
-                    <td>385</td>
-                </tr>
-                <tr>
-                    <th>2</th>
-                    <td>31</td>
-                    <td>61</td>
-                    <td>90</td>
-                    <td>119</td>
-                    <td>148</td>
-                    <td>177</td>
-                    <td>206</td>
-                    <td>236</td>
-                    <td>266</td>
-                    <td>296</td>
-                    <td>326</td>
-                    <td>356</td>
-                    <td>386</td>
-                </tr>
-                <!-- Repeat for each row until 29 -->
-                <!-- Here is an example of another row, replace this with your actual data -->
-                <tr>
-                    <th>29</th>
-                    <td>58</td>
-                    <td>88</td>
-                    <td>117</td>
-                    <td>146</td>
-                    <td>175</td>
-                    <td>204</td>
-                    <td>233</td>
-                    <td>263</td>
-                    <td>293</td>
-                    <td>323</td>
-                    <td>353</td>
-                    <td>383</td>
-                    <td>413</td>
-                </tr>
-                <!-- ... -->
-                <!-- Add more rows as needed -->
-            </tbody>
-        </table>
+    <div class="dashboard">
+        <!-- Cards Section -->
+        <div class="card cards-section">
+            <div class="card-content">
+                <h3>Cards</h3>
+                <div class="card-info">
+                    <span>Balance: 34,207.97 UAH</span>
+                    <span>**** 9814</span>
+                    <span>08/06</span>
+                </div>
+                <button class="add-card">Add new card</button>
+            </div>
+        </div>
+
+        <!-- Balance Chart -->
+        <div class="card balance-chart">
+            <h3>Balance</h3>
+            <div class="chart">
+                <!-- Placeholder for chart -->
+                <span>Chart will be here</span>
+            </div>
+        </div>
+
+        <!-- Quick Transfer -->
+        <div class="card quick-transfer">
+            <h3>Quick Transfer</h3>
+            <div class="transfer-options">
+                <div class="transfer-person">Eduardo</div>
+                <div class="transfer-person">Greg</div>
+                <div class="transfer-person">Irma</div>
+                <div class="transfer-person">Kyle</div>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="card transactions">
+            <h3>Transactions</h3>
+            <div class="transaction-list">
+                <div class="transaction-item">Electricity Bill -821.41 UAH</div>
+                <div class="transaction-item">Supermarket -74.77 UAH</div>
+                <div class="transaction-item">Investment -942.95 UAH</div>
+            </div>
+        </div>
+
+        <!-- Everest Expedition -->
+        <div class="card expedition">
+            <h3>Everest Expedition</h3>
+            <div class="expedition-info">
+                <p>Total Accumulated: 20,000 / 100,000</p>
+                <p>Direct Top-up: 34,000</p>
+                <p>Removed: 14,000</p>
+                <button>Add new goal</button>
+                <button>Withdraw</button>
+                <button>Top up the bank</button>
+                <button>Break the bank</button>
+            </div>
+        </div>
+
+        <!-- Top Gainers -->
+        <div class="card top-gainers">
+            <h3>Top Gainers</h3>
+            <div class="gainers-list">
+                <div class="gainer">Amazon $124.72</div>
+                <div class="gainer">Microsoft $345.67</div>
+            </div>
+        </div>
+
+        <!-- Exchange Rates -->
+        <div class="card exchange-rates">
+            <h3>Exchange Rates</h3>
+            <div class="exchange-info">
+                <p>1 UAH = 41.12 USD</p>
+                <!-- Placeholder for exchange chart -->
+                <span>Chart will be here</span>
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -95,7 +95,7 @@ body {
 }
 
 .search-button {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: transparent;
     border: none;
     border-radius: 50%;
     padding: 10px;
@@ -188,7 +188,12 @@ body {
     top: 0 !important;
     right: 4 !important;
 }
-
+element.style {
+    padding-top: 0px;
+    min-width: 549px !important;
+    max-width: 549px !important;
+    max-height: 536px;
+}
 .menu-icon {
     position: absolute;
     top: 20px;
@@ -222,13 +227,7 @@ body {
     flex-shrink: 0;
 }
 }
-element.style {
-    padding-top: 0px;
-    min-width: 549px !important;
-    max-width: 549px !important;
 
-    max-height: 536px;
-}
 </style>
 </head>
 <body>
@@ -371,55 +370,8 @@ element.style {
 
 
   <div style="display: flex; justify-content: center;" >
-  <input type="text" id="searchInput" placeholder="Search by crop name, type, planting date, etc.">
 
-  <div class="filter-container">
-    <button id="filterToggleBtn">Filters</button>
 
-    <div id="filterDropdown" class="filter-dropdown hidden">
-      <button id="closeFilterBtn" class="close-btn">&times;</button>
-      <select id="cropNameSelect">
-        <option value="">Select Crop Name</option>
-        <?php
-          $cropNameSql = "SELECT DISTINCT Name FROM crop WHERE delete_flag = 0 AND is_deleted = 0";
-          $cropNameResult = $conn->query($cropNameSql);
-          if ($cropNameResult->num_rows > 0) {
-            while($nameRow = $cropNameResult->fetch_assoc()) {
-              echo "<option value='{$nameRow['Name']}'>{$nameRow['Name']}</option>";
-            }
-          }
-        ?>
-      </select>
-
-      <select id="cropTypeSelect" disabled>
-        <option value="">Select Crop Type</option>
-      </select>
-
-      <div>
-        <label for="plantingDateFrom">Planting Date From:</label>
-        <input type="date" id="plantingDateFrom">
-      </div>
-
-      <div>
-        <label for="plantingDateTo">Planting Date To:</label>
-        <input type="date" id="plantingDateTo">
-      </div>
-
-      <div>
-        <label for="datePlantedFrom">Date Planted From:</label>
-        <input type="date" id="datePlantedFrom">
-      </div>
-
-      <div>
-        <label for="datePlantedTo">Date Planted To:</label>
-        <input type="date" id="datePlantedTo">
-      </div>
-
-      <input type="number" id="sizeOfPlantationFrom" placeholder="Size Of Plantation From" step="any">
-      <input type="number" id="sizeOfPlantationTo" placeholder="Size Of Plantation To" step="any">
-      <button id="filterButton">Filter</button>
-    </div>
-  </div>
 
   </div>
 </div>
@@ -429,7 +381,7 @@ element.style {
         <i class="fas fa-bars"></i>
     </div>
     <div class="search-container">
-        <input type="text" class="search-input" placeholder="Search...">
+        <input type="text" class="search-input" id="address-input" placeholder="Search...">
         <button class="search-button"><i class="fas fa-search"></i></button>
     </div>
     <div class="category-container" id="category-container">
@@ -463,6 +415,37 @@ function initMap() {
         gestureHandling: 'greedy'
     });
 
+    // Initialize Autocomplete for Address Search
+    const input = document.getElementById("address-input");
+    const autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.bindTo("bounds", map);
+
+    let searchMarker = null;
+
+    autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry || !place.geometry.location) {
+            alert("No details available for this address.");
+            return;
+        }
+
+        // Center the map on the selected location
+        map.setCenter(place.geometry.location);
+        map.setZoom(15);
+
+        // Place a marker on the searched location
+        if (searchMarker) {
+            searchMarker.setMap(null); // Remove the previous marker
+        }
+        searchMarker = new google.maps.Marker({
+            position: place.geometry.location,
+            map: map,
+            title: "Searched Location",
+        });
+    });
+
+    // Add product markers
     products.forEach(product => {
         const marker = new google.maps.Marker({
             position: { lat: parseFloat(product.latitude), lng: parseFloat(product.longitude) },
@@ -493,10 +476,8 @@ function initMap() {
             content: infoWindowContent
         });
 
-        // Open the info window immediately after adding the marker
         infoWindow.open(map, marker);
 
-        // Optionally, you can also add a click listener to the marker to toggle the info window
         marker.addListener("click", () => {
             infoWindow.open(map, marker);
         });
@@ -544,6 +525,7 @@ document.getElementById('menu-icon').addEventListener('click', function() {
     }
 });
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap" async></script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMd33bMoISWyM0YOJ_AG9i7NgIODP2rV4&libraries=places&callback=initMap" async></script>
 </body>
 </html>

@@ -223,10 +223,12 @@ while ($row = $crops_details_result->fetch_assoc()) {
     justify-content: space-between;
     margin-top: -3px; /* Adjust the margin top as needed */
 }
-
+.weather-info{
+    cursor: pointer;
+}
 
 </style>
-        <div id="weather-info" class="weather-info">
+        <div id="weather-info" class="weather-info" >
         <div class="info-box">
     <span class="info-box-icon bg-gradient-info elevation-1"><i class="fas fa-weather"></i></span>
     <div class="info-box-content">
@@ -290,76 +292,6 @@ while ($row = $crops_details_result->fetch_assoc()) {
     background-color: #0056b3;
   }
     </style>
-    <style>
-    .weather-cards-container {
-        display: flex;
-        overflow-x: auto;
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .weather-card {
-        flex: 0 0 auto;
-        width: 150px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    .weather-card img {
-        width: 50px;
-        height: 50px;
-    }
-
-    .weather-info {
-        margin-top: 10px;
-    }
-
-    .temp {
-        font-size: 1.5em;
-        font-weight: bold;
-    }
-
-    .min-max {
-        font-size: 0.9em;
-        color: #666;
-    }
-</style>
-<style>
-    #weather-calendar {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr); /* 7 columns for days of the week */
-        gap: 10px;
-        padding: 20px;
-    }
-
-    .calendar-day {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 10px;
-        text-align: center;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .calendar-day header {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .weather-info {
-        font-size: 0.9em;
-        color: #555;
-    }
-
-    .weather-icon {
-        width: 50px;
-        height: 50px;
-    }
-</style>
-<div id="weather-calendar"></div>
     <div class="sidebar-container">
         <div class="main-content" >
    <div id="show"></div>
@@ -397,73 +329,75 @@ while ($row = $crops_details_result->fetch_assoc()) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
     <script>
-    // Replace these with actual farm latitude and longitude values
-    const farmLatitude = <?= htmlspecialchars($farm['farm_latitude']) ?>;
+        // Fetch weather information
+ // Fetch weather information
+ const farmLatitude = <?= htmlspecialchars($farm['farm_latitude']) ?>;
     const farmLongitude = <?= htmlspecialchars($farm['farm_longitude']) ?>;
     const apiKey = "2f745fa85d563da5adb87b6cd4b81caf";
 
     function getWeather() {
-        const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${farmLatitude}&lon=${farmLongitude}&appid=${apiKey}&units=metric`;
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${farmLatitude}&lon=${farmLongitude}&appid=${apiKey}&units=metric`;
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                let weatherCards = '';
-                const dailyData = groupByDays(data.list);
-                
-                dailyData.forEach(day => {
-                    const weather = day[0]; // Using the first forecast of the day as representative
-                    weatherCards += `
-                        <div class="weather-card">
-                            <img src="https://openweathermap.org/img/w/${weather.weather[0].icon}.png" alt="Weather icon">
-                            <div class="weather-info">
-                                <div>${new Date(weather.dt_txt).toLocaleDateString()}</div>
-                                <div class="temp">${weather.main.temp} &#176;C</div>
-                                <div class="description">${weather.weather[0].main} - ${weather.weather[0].description}</div>
-                                <div class="min-max">Min: ${weather.main.temp_min} &#176;C / Max: ${weather.main.temp_max} &#176;C</div>
-                            </div>
-                        </div>
-                    `;
-                });
-
                 document.getElementById("weather-info").innerHTML = `
-                    <div class="weather-cards-container">${weatherCards}</div>
+                <style>
+.header-temp-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: -4px; /* Adjust the margin bottom as needed */
+}
+
+.weather-details-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -3px; /* Adjust the margin top as needed */
+}
+
+
+</style>
+<div class="info-box">
+    <span class="info-box-icon bg-gradient-info elevation-1"><img src="https://openweathermap.org/img/w/${data.weather[0].icon}.png"></span>
+    <div class="info-box-content">
+        <div class="header-temp-container">
+            <div class="info-header h3">${data.name}, ${data.sys.country}</div>
+            <span class="info-box-number text-right h3">${data.main.temp} &#176;</span>
+        </div>
+        <div id="weather-info" class="weather-info">
+            <div class="weather-details-container">
+                <div class="weather-description">${data.weather[0].main} - ${data.weather[0].description}</div>
+                <div class="temperature">
+                    <span class="info-box-number text-right b">min ${data.main.temp_min} max ${data.main.temp_max}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
                 `;
             })
             .catch(() => {
                 document.getElementById("weather-info").innerHTML = `<h3 class="error">Weather information not found</h3>`;
             });
     }
-
-    // Utility function to group forecast data by days
-    function groupByDays(list) {
-        const days = {};
-        list.forEach(item => {
-            const date = new Date(item.dt_txt).toLocaleDateString();
-            if (!days[date]) {
-                days[date] = [];
-            }
-            days[date].push(item);
-        });
-        return Object.values(days).slice(0, 5); // Get only the next 5 days
-    }
-
+   
     // Fetch weather on load
     window.addEventListener("load", getWeather);
 
-    // Initialize map
-    function initMap() {
-        var farmLocation = {lat: farmLatitude, lng: farmLongitude};
-        var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 15,
-            center: farmLocation
-        });
-        var marker = new google.maps.Marker({
-            position: farmLocation,
-            map: map
-        });
-    }
-
-
+        // Initialize map
+        function initMap() {
+            var farmLocation = {lat: farmLatitude, lng: farmLongitude};
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: farmLocation
+            });
+            var marker = new google.maps.Marker({
+                position: farmLocation,
+                map: map
+            });
+        }
 
         // Load Google Maps script
         var script = document.createElement('script');
@@ -507,57 +441,21 @@ function getUrlParameter(name) {
 };
 
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Select the weather info box
+        const weatherInfo = document.getElementById('weather-info');
+
+        // Add click event listener
+        if (weatherInfo) {
+            weatherInfo.addEventListener('click', () => {
+                // Navigate to the desired page
+                window.location.href = "<?php echo base_url ?>vendor/?page=crops/weather_calendar";
+            });
+        }
+    });
+</script>
+
 <?php
 include 'gemini.php';
 ?>
-<script>
-    function fetchWeatherData() {
-        const farmId = 1; // Replace with actual farm ID
-        const url = `crops/fetch_weather.php?farm_id=${farmId}`; // Endpoint to get weather data
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                populateCalendar(data);
-            })
-            .catch(error => console.error('Error fetching weather data:', error));
-    }
-
-    function populateCalendar(weatherData) {
-        const calendar = document.getElementById('weather-calendar');
-        calendar.innerHTML = ''; // Clear existing content
-
-        const daysInWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-        weatherData.forEach(entry => {
-            const date = new Date(entry.RecordedAt);
-            const day = daysInWeek[date.getDay()];
-            const dayOfMonth = date.getDate();
-            const month = date.toLocaleString('default', { month: 'short' });
-
-            const weatherIcon = entry.WeatherIcon ? `<img class="weather-icon" src="https://openweathermap.org/img/w/${entry.WeatherIcon}.png" alt="Weather Icon">` : '';
-
-            const dayHtml = `
-                <div class="calendar-day">
-                    <header>${day}, ${dayOfMonth} ${month}</header>
-                    ${weatherIcon}
-                    <div class="weather-info">
-                        Temp: ${entry.Temperature} &#176;C<br>
-                        Feels Like: ${entry.FeelsLikeTemperature} &#176;C<br>
-                        Min: ${entry.MinTemperature} &#176;C / Max: ${entry.MaxTemperature} &#176;C<br>
-                        Humidity: ${entry.Humidity}%<br>
-                        Wind: ${entry.WindSpeed} m/s ${entry.WindDirection}&#176;<br>
-                        ${entry.WeatherDescription}<br>
-                        Rain: ${entry.RainVolume} mm<br>
-                        Cloudiness: ${entry.Cloudiness}%
-                    </div>
-                </div>
-            `;
-            
-            calendar.innerHTML += dayHtml;
-        });
-    }
-
-    // Fetch weather data when the page loads
-    window.addEventListener('load', fetchWeatherData);
-</script>

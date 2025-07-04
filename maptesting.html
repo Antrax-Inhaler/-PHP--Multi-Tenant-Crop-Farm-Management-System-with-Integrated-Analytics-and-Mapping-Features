@@ -1,76 +1,77 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Select Coordinates in Naujan</title>
-    <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap"
-    async
-  ></script>  </head>
-  <body>
-    <div id="map" style="width: 100%; height: 400px;"></div>
-    <input id="searchInput" type="text" placeholder="Search Naujan location" style="margin-top: 10px; width: 300px;">
-    <script>
-      function initMap() {
-        const naujanCenter = { lat: 13.3167, lng: 121.3000 };
-
-        const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 14,
-          center: naujanCenter,
-        });
-
-        let marker;
-
-        function createMarker(latLng) {
-          marker = new google.maps.Marker({
-            position: latLng,
-            map: map,
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `Latitude: ${latLng.lat()}<br>Longitude: ${latLng.lng()}`,
-          });
-
-          marker.addListener("click", () => {
-            infoWindow.open(map, marker);
-          });
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Map with Address Selection</title>
+    <style>
+        /* Set styles for the map and inputs */
+        #map {
+            height: 400px;
+            width: 100%;
         }
 
-        const input = document.getElementById("searchInput");
+        .map-container {
+            margin: 20px 0;
+        }
 
-        const autocomplete = new google.maps.places.Autocomplete(input);
-        autocomplete.bindTo("bounds", map);
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Map with Address Selection</h1>
+    <input id="address-input" type="text" placeholder="Enter an address" />
+    <div id="map" class="map-container"></div>
 
-        autocomplete.setFields(["geometry"]);
+    <script>
+        let map;
+        let marker;
 
-        autocomplete.addListener("place_changed", function() {
-          const place = autocomplete.getPlace();
+        function initMap() {
+            // Initialize the map centered at a default location
+            const defaultLocation = { lat: 37.7749, lng: -122.4194 }; // San Francisco, CA
 
-          if (!place.geometry) {
-            window.alert("No details available for input: '" + place.name + "'");
-            return;
-          }
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: defaultLocation,
+                zoom: 13,
+            });
 
-          if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport);
-          } else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(17);
-          }
+            // Add a marker at the default location
+            marker = new google.maps.Marker({
+                position: defaultLocation,
+                map: map,
+            });
 
-          if (marker) {
-            marker.setMap(null);
-          }
+            // Initialize the Autocomplete feature for address selection
+            const input = document.getElementById("address-input");
+            const autocomplete = new google.maps.places.Autocomplete(input);
 
-          createMarker(place.geometry.location);
-        });
+            autocomplete.bindTo("bounds", map);
 
-        map.addListener("click", (event) => {
-          if (marker) {
-            marker.setMap(null);
-          }
-          createMarker(event.latLng);
-        });
-      }
+            // When an address is selected
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+
+                if (!place.geometry || !place.geometry.location) {
+                    alert("No details available for this address.");
+                    return;
+                }
+
+                // Move the map to the selected place
+                map.setCenter(place.geometry.location);
+                map.setZoom(15);
+
+                // Move the marker to the selected place
+                marker.setPosition(place.geometry.location);
+                marker.setVisible(true);
+            });
+        }
     </script>
-  </body>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMd33bMoISWyM0YOJ_AG9i7NgIODP2rV4&libraries=places&callback=initMap" async defer></script>
+</body>
 </html>

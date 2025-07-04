@@ -247,6 +247,19 @@
     <div  class="pictures"><img src="uploads/basketman.png" alt=""></div>
   </div>
   <div class="strip"></div>
+  <style>
+        #notify-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+<body>
+    <button id="notify-btn">Enable Notifications</button>
+
     <script>
         // Check for Notification permission
         function requestNotificationPermission() {

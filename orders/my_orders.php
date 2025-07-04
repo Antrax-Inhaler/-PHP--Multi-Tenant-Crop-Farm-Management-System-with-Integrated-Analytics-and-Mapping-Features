@@ -576,7 +576,11 @@ input[type="search"] {
         }
 </STYle>
 <header class="header_banner" >Browse More Farmer's Products</header>
-
+<style>
+    .row{
+        justify-content: center !important;
+    }
+</style>
 <div class="sidebar-container">
         <div class="card-body">
             <div class="container-fluid">

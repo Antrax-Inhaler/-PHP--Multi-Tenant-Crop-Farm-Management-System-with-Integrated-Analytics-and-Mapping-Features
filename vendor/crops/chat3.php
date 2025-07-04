@@ -3,7 +3,7 @@
 .chatbot-toggler {
             position: fixed;
             bottom: 30px;
-            right: 35px;
+            right: 11px;
             outline: none;
             border: none;
             height: 50px;

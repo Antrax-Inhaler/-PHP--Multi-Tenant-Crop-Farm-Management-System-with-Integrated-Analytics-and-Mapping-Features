@@ -1,41 +1,77 @@
-<?php require_once('../config.php'); 
+<?php
+require_once('../config.php');
 
-// Fetch all vendors
-$vendors = $conn->query("SELECT id FROM vendor_list WHERE delete_flag = 0");
+// Query vendors and their commission rates
+$vendorQuery = "SELECT v.id as vendor_id, u.id as user_id, u.commission 
+                FROM vendor_list v 
+                JOIN users u ON v.user_id = u.id";
 
-while($vendor = $vendors->fetch_assoc()) {
-    $vendor_id = $vendor['id'];
+$result = $conn->query($vendorQuery);
 
-    // Fetch all distinct months from order_list for the vendor using date_updated
-    $months_query = $conn->query("SELECT DISTINCT DATE_FORMAT(date_updated, '%Y-%m') as month FROM order_list WHERE vendor_id = '{$vendor_id}'");
+if ($result->num_rows > 0) {
+    while ($vendor = $result->fetch_assoc()) {
+        $vendorId = $vendor['vendor_id'];
+        $commissionRate = $vendor['commission'];
 
-    while($month_row = $months_query->fetch_assoc()) {
-        $month = $month_row['month'];
+        // Get distinct months from order_list for this vendor
+        $monthsQuery = "SELECT DISTINCT DATE_FORMAT(date_created, '%Y-%m') as month 
+                        FROM order_list 
+                        WHERE vendor_id = $vendorId AND status = 4 
+                        ORDER BY month";
 
-        // Calculate total sales for the month using date_updated
-        $sales_query = $conn->query("SELECT SUM(total_amount) as total_sales FROM order_list WHERE vendor_id = '{$vendor_id}' AND DATE_FORMAT(date_updated, '%Y-%m') = '{$month}'")->fetch_assoc();
-        $total_sales = $sales_query['total_sales'] ? $sales_query['total_sales'] : 0;
+        $monthsResult = $conn->query($monthsQuery);
 
-        // Fetch commission rate for the vendor's user
-        $vendor_user_query = $conn->query("SELECT user_id FROM vendor_list WHERE id = '{$vendor_id}'")->fetch_assoc();
-        $user_id = $vendor_user_query['user_id'];
-        $commission_rate_query = $conn->query("SELECT commission FROM users WHERE id = '{$user_id}'")->fetch_assoc();
-        $commission_rate = $commission_rate_query['commission'];
-        $total_commission = $total_sales * $commission_rate;
+        if ($monthsResult->num_rows > 0) {
+            while ($monthRow = $monthsResult->fetch_assoc()) {
+                $month = $monthRow['month'];
 
-        // Check if entry already exists
-        $existing_entry = $conn->query("SELECT id FROM vendor_commissions WHERE vendor_id = '{$vendor_id}' AND month = '{$month}'")->fetch_assoc();
+                // Calculate total sales for the current month for this vendor
+                $salesQuery = "SELECT SUM(total_amount) as total_sales 
+                               FROM order_list 
+                               WHERE vendor_id = $vendorId 
+                               AND status = 4 
+                               AND DATE_FORMAT(date_created, '%Y-%m') = '$month'";
 
-        if ($existing_entry) {
-            // Update existing entry
-            $conn->query("UPDATE vendor_commissions SET total_sales = '{$total_sales}', total_commission = '{$total_commission}' WHERE id = '{$existing_entry['id']}'");
-        } else {
-            // Insert new entry
-            $conn->query("INSERT INTO vendor_commissions (vendor_id, month, total_sales, total_commission) VALUES ('{$vendor_id}', '{$month}', '{$total_sales}', '{$total_commission}')");
+                $salesResult = $conn->query($salesQuery);
+                $totalSales = 0;
+
+                if ($salesResult->num_rows > 0) {
+                    $salesData = $salesResult->fetch_assoc();
+                    $totalSales = $salesData['total_sales'] ?? 0;
+                }
+
+                // Calculate the commission
+                $totalCommission = $totalSales * $commissionRate;
+
+                // Insert or update vendor commissions table
+                $commissionCheckQuery = "SELECT id FROM vendor_commissions 
+                                         WHERE vendor_id = $vendorId 
+                                         AND month = '$month'";
+
+                $commissionCheckResult = $conn->query($commissionCheckQuery);
+
+                if ($commissionCheckResult->num_rows > 0) {
+                    // Update existing record
+                    $updateCommissionQuery = "UPDATE vendor_commissions 
+                                               SET total_sales = $totalSales, 
+                                                   total_commission = $totalCommission 
+                                               WHERE vendor_id = $vendorId 
+                                               AND month = '$month'";
+                    $conn->query($updateCommissionQuery);
+                } else {
+                    // Insert new record
+                    $insertCommissionQuery = "INSERT INTO vendor_commissions (vendor_id, month, total_sales, total_commission, paid) 
+                                               VALUES ($vendorId, '$month', $totalSales, $totalCommission, 0)";
+                    $conn->query($insertCommissionQuery);
+                }
+            }
         }
     }
 }
+
+// Close connection
 ?>
+
 <?php
 require_once('../config.php');
 

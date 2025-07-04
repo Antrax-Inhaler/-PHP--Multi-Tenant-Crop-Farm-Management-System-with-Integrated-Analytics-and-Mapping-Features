@@ -3,25 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notification Sound Example</title>
+    <title>Payroll Slip</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td, th {
+            padding: 5px;
+            border: 1px solid black;
+            text-align: right;
+            vertical-align: top;
+        }
+        .header {
+            text-align: left;
+            font-weight: bold;
+        }
+        .title {
+            font-weight: bold;
+            text-align: left !important;
+        }
+        .green {
+            color: green;
+        }
+        .red {
+            color: red;
+        }
+        .underline {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Notification Sound Example</h1>
-    <audio id="silent-sound" src="sounds/silent.mp3" preload="auto" muted></audio>
-    <audio id="notification-sound" src="sounds/notification.wav" preload="auto"></audio>
 
-    <script>
-        window.onload = function() {
-            var silentSound = document.getElementById('silent-sound');
-            silentSound.play().then(function() {
-                silentSound.muted = false; // Unmute after playing the silent sound
-                setTimeout(function() {
-                    document.getElementById('notification-sound').play();
-                }, 5000); // 5000 milliseconds = 5 seconds
-            }).catch(function(error) {
-                console.log('Silent sound playback failed:', error);
-            });
-        };
-    </script>
+<table>
+    <tr>
+        <td colspan="3" class="header">DEPARTMENT OF AGRICULTURE(REGION IV-B MIMAROPA)</td>
+        <td colspan="3" class="header" style="text-align: right;">Pay Slip</td>
+    </tr>
+    <tr>
+        <td colspan="3" class="header">REGIONAL OFFICE</td>
+        <td colspan="3" class="month-year" ><b>Month Year</b></td>
+    </tr>
+    <tr>
+        <td class="member-name title" colspan="6" class="">Member Name Here</td>
+    </tr>
+    <tr>
+        <td>Monthly Rate</td>
+        <td class="monthly-rate" >35,693.00</td>
+        <td>Lates</td>
+        <td class="late-count" >0.00</td>
+        <td>Gross</td>
+        <td class="gross-amount" >37,693.00</td>
+    </tr>
+    <tr>
+        <td >Pera/Aca</td>
+        <td class="pera-aca-amount" >2,000.00</td>
+        <td>Amount</td>
+        <td class="late-amount" >4.00</td>
+        <td>Adjustment</td>
+        <td  class="adjustment-amount" >0.00</td>
+    </tr>
+    <tr>
+        <td>Add/Com</td>
+        <td class="add-com-amount" >0.0</td>
+        <td>Undertime</td>
+        <td class="undertime-count" >9.00</td>
+        <td >Deductions</td>
+        <td  class="total-deduction-amount">18,577.06</td>
+
+    </tr>
+    <tr>
+        <td>Days</td>
+        <td>-</td>
+        <td  >Amount</td>
+        <td class="undertime-amount">3.00</td>
+        <td>Net Pay</td>
+        <td class="net-pay-amount" >19,115.94</td>
+
+
+    </tr>
+    <tr>
+        <td colspan="3" class="green underline" style="text-align: center;">Adjustments</td>
+        <td colspan="3" class="red underline" style="text-align: center;">Deductions</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+    <tr>
+
+        <td class="bonus-name" colspan="2">Bonus Name</td>
+        <td class="bonus-amount" >0.00</td>
+        <td class="deduction-name" colspan="2">Deduction Name</td>
+        <td class="deduction-amount">3,212.37</td>
+    </tr>
+</table>
+
 </body>
 </html>

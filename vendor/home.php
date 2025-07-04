@@ -305,20 +305,6 @@
     }
     ?>
 
-    <!-- Top Products Chart -->
-    <div class="row">
-      <div class="col-8">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Top Products</h3>
-          </div>
-          <div class="card-body">
-            <canvas id="topProductsChart" width="100%" height="100%"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById('topProductsChart').getContext('2d');
@@ -353,7 +339,293 @@
     </script>
 
 <?php
-include_once 'monthly_revenue.php';
+$vendor_id = $_settings->userdata('id');
+
+// Get current year and month if not selected
+$selected_year = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
+$selected_month = isset($_GET['month']) ? (int)$_GET['month'] : date('m');
+
+// Fetch available years for filtering (from order_list)
+$yearsQuery = $conn->query("SELECT DISTINCT YEAR(date_updated) AS year FROM order_list WHERE vendor_id = '{$vendor_id}' ORDER BY year DESC");
+$availableYears = [];
+while ($row = $yearsQuery->fetch_assoc()) {
+    $availableYears[] = $row['year'];
+}
+
+// Fetch Order Status Data (Filtered by Year and Month)
+$orderStatusData = array();
+$statusNames = [
+    0 => 'Pending',
+    1 => 'Confirmed',
+    2 => 'Packed',
+    3 => 'Out for Delivery',
+    4 => 'Delivered',
+    5 => 'Cancelled'
+];
+
+$statusQuery = $conn->query("SELECT `status`, COUNT(id) AS order_count FROM order_list 
+    WHERE vendor_id = '{$vendor_id}' 
+    AND YEAR(date_updated) = '{$selected_year}' 
+    AND MONTH(date_updated) = '{$selected_month}' 
+    GROUP BY `status`");
+while ($row = $statusQuery->fetch_assoc()) {
+    $orderStatusData[$statusNames[$row['status']]] = $row['order_count'];
+}
+
+// Fetch Monthly Sales Data (Filtered by Year and Month)
+$salesQuery = $conn->query("SELECT SUM(total_amount) AS sales FROM order_list 
+    WHERE vendor_id = '{$vendor_id}' 
+    AND YEAR(date_updated) = '{$selected_year}' 
+    AND MONTH(date_updated) = '{$selected_month}'");
+$monthlySalesRow = $salesQuery->fetch_assoc();
+$monthlySales = $monthlySalesRow['sales'] ?? 0;
+?>
+  <!-- Include Chart.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* General body and container styles */
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .charts-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+    }
+
+    /* Uniform card design for all charts */
+    .chart-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        flex: 1;
+        min-width: 300px; /* Ensure the card doesn't get too small */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-align: center;
+        color: #333;
+    }
+
+    /* Responsive behavior: stack cards vertically on smaller screens */
+    @media (max-width: 768px) {
+        .charts-wrapper {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-card {
+            width: 100%;
+        }
+    }
+
+    /* Card header styles for each chart */
+    .chart-card canvas {
+        width: 100% !important;
+        height: 300px !important; /* Adjust height to ensure charts are visually balanced */
+    }
+</style>
+
+<div class="container mt-4">
+    <hr>
+    <h2 class="text-center mb-4">Dashboard Charts</h2>
+    <div>
+            <label for="yearFilter">Year:</label>
+            <select id="yearFilter" class="form-control">
+                <?php foreach ($availableYears as $year): ?>
+                    <option value="<?= $year ?>" <?= ($selected_year == $year) ? 'selected' : '' ?>>
+                        <?= $year ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div>
+            <label for="monthFilter">Month:</label>
+            <select id="monthFilter" class="form-control">
+                <?php for ($i = 1; $i <= 12; $i++): ?>
+                    <option value="<?= $i ?>" <?= ($selected_month == $i) ? 'selected' : '' ?>>
+                        <?= date('F', mktime(0, 0, 0, $i, 1)) ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
+        </div>
+    <div class="charts-wrapper">
+        <!-- Order Status Chart -->
+        <div class="chart-card">
+            <h2 class="chart-title">Order Status Breakdown</h2>
+            <canvas id="orderStatusChart"></canvas>
+        </div>
+
+        <!-- Monthly Sales Chart -->
+        <div class="chart-card">
+            <h2 class="chart-title">Monthly Sales</h2>
+            <canvas id="salesChart"></canvas>
+        </div>
+
+        <!-- Top Products Chart -->
+        <div class="chart-card">
+            <h2 class="chart-title">Top Products</h2>
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('yearFilter').addEventListener('change', updateFilter);
+document.getElementById('monthFilter').addEventListener('change', updateFilter);
+
+function updateFilter() {
+    let selectedYear = document.getElementById('yearFilter').value;
+    let selectedMonth = document.getElementById('monthFilter').value;
+    window.location.href = "?year=" + selectedYear + "&month=" + selectedMonth;
+}
+</script>
+
+  <!-- JavaScript Code for Order Status Breakdown Chart -->
+  <script>
+    // JavaScript for Pie Chart Rendering
+    const ctxOrderStatus = document.getElementById('orderStatusChart').getContext('2d');
+const orderStatusData = <?= json_encode($orderStatusData) ?>;
+const labels = Object.keys(orderStatusData);
+const data = Object.values(orderStatusData);
+const backgroundColors = [
+    'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)',
+    'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
+    'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)'
+];
+
+const orderStatusChart = new Chart(ctxOrderStatus, {
+    type: 'pie',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Order Status',
+            data: data,
+            backgroundColor: backgroundColors,
+            borderWidth: 1
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+  </script>
+<?php
+// Sample PHP code for database connection
+
+// Fetch Monthly Sales Data
+$monthlySalesData = array();
+$salesQuery = $conn->query("
+  SELECT 
+    MONTH(date_updated) AS month,
+    DATE_FORMAT(date_updated, '%M') AS month_name,
+    SUM(total_amount) AS sales
+  FROM order_list
+  WHERE 
+    vendor_id = '{$_settings->userdata('id')}' AND
+    YEAR(date_updated) = YEAR(CURDATE())
+  GROUP BY MONTH(date_updated)
+  ORDER BY MONTH(date_updated)
+");
+while ($row = $salesQuery->fetch_assoc()) {
+  $monthlySalesData[$row['month_name']] = $row['sales'];
+}
+$categoryData = array();
+$categoryQuery = $conn->query("
+  SELECT name
+  FROM category_list
+  WHERE vendor_id = '{$_settings->userdata('id')}' AND delete_flag = 0
+");
+while ($row = $categoryQuery->fetch_assoc()) {
+  $categoryData[$row['name']] = 0; // Initialize product count for each category
+}
+
+// Count Products in Each Category
+$productQuery = $conn->query("
+  SELECT category_id, COUNT(id) AS total_products
+  FROM product_list
+  WHERE vendor_id = '{$_settings->userdata('id')}' AND delete_flag = 0
+  GROUP BY category_id
+");
+while ($row = $productQuery->fetch_assoc()) {
+  // Update product count for the corresponding category
+  if (isset($categoryData[$row['category_id']])) {
+    $categoryData[$row['category_id']] = $row['total_products'];
+  }
+}
 ?>
 
-<?php require_once('orderstatusbreakdown.php') ?>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Add some custom styles */
+    .chart-container {
+      margin-top: 40px;
+      width: 200px;
+    }
+    .chart-title {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  </style>
+
+ 
+  <!-- JavaScript Code for Monthly Sales Chart -->
+  <script>
+    // JavaScript for Chart Rendering
+    const ctxSales = document.getElementById('salesChart').getContext('2d');
+new Chart(ctxSales, {
+    type: 'bar',
+    data: {
+        labels: ['Sales'],
+        datasets: [{
+            label: 'Monthly Sales',
+            data: [<?= $monthlySales ?>],
+            backgroundColor: '#2ddc9a',
+            borderColor: '#b49f81',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: { y: { beginAtZero: true } }
+    }
+});
+  </script>
+
+ 
+  <!-- JavaScript Code for Product Category Distribution Chart -->
+  <script>
+    // Define custom colors for categories
+    const categoryColors = ['#2ddc9a', '#ff6384', '#36a2eb', '#ffce56', '#9966ff', '#ff9f40', '#4bc0c0', '#ffcd56', '#37d8e4', '#e95c5c'];
+
+    // JavaScript for Bar Chart Rendering
+    const ctxCategoryBar = document.getElementById('categoryBarChart').getContext('2d');
+    const categoryBarChart = new Chart(ctxCategoryBar, {
+      type: 'horizontalBar',
+      data: {
+        labels: <?= json_encode(array_keys($categoryData)) ?>,
+        datasets: [{
+          label: 'Product Categories',
+          data: <?= json_encode(array_values($categoryData)) ?>,
+          backgroundColor: categoryColors,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>

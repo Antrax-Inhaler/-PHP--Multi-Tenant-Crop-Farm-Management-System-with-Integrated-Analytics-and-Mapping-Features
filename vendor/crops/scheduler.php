@@ -245,6 +245,11 @@ input {
   border-radius: 5px;
   font-size: 16px;
 }
+.modal-backdrop {
+
+    z-index: 992 !important;
+
+}
     </style>
 </head>
 <body>
@@ -303,7 +308,7 @@ input {
             </div>
 
             <div class="form-group">
-                <button type="button" onclick="submitToAI()">Submit to AI</button>
+                <button  style="background: linear-gradient(to bottom right, #9CDC78, #74DCB0) !important; type="button" onclick="submitToAI()">Submit to AI</button>
             </div>
             <button id="create_new">Add Crop</button>
 <!-- Add this to your HTML where appropriate -->

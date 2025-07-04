@@ -2,7 +2,8 @@
 require_once('./../../config.php');
 ?>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&callback=initMap" async></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPgOaKhjwvksUVP6qBQpjdq3bTQa57NuQ&libraries=drawing&callback=initMap"
+    async defer></script>
 
 <style>
     #map2 {
@@ -11,42 +12,43 @@ require_once('./../../config.php');
     }
 </style>
 
-
-    <form action="" id="farm-form">
-        <input type="hidden" name="VendorListId" value="<?= $_settings->userdata('id') ?>">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="name" class="control-label">Farm Name</label>
-                    <input name="Name" id="name" type="text" class="form-control form-control-sm form-control-border" required>
-                </div>
-                <div class="form-group">
-                    <label for="description" class="control-label">Description</label>
-                    <textarea name="Description" id="description" rows="4" class="form-control form-control-sm rounded-0 summernote" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="size" class="control-label">Size (in hectares)</label>
-                    <input name="Size" id="size" type="number" step="0.01" class="form-control form-control-sm form-control-border" required>
-                </div>
-                <div class="form-group">
-                    <label for="logo" class="control-label">Upload Image</label>
-                    <input type="file" id="logo" name="Image" class="form-control form-control-sm form-control-border" onchange="displayImg(this,$(this))" accept="image/png, image/jpeg" required>
-                </div>
-                <div class="form-group col-md-6 text-center">
-                    <img src="<?= validate_image('') ?>" alt="Farm Image" id="cimg" class="border border-gray img-thumbnail">
-                </div>
+<form action="" id="farm-form">
+    <input type="hidden" name="VendorListId" value="<?= $_settings->userdata('id') ?>">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="name" class="control-label">Farm Name</label>
+                <input name="Name" id="name" type="text" class="form-control form-control-sm form-control-border" required>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="location" class="control-label">Select Farm Location</label>
-                    <div id="map2"></div>
-                    <input type="hidden" id="latitude" name="Latitude">
-                    <input type="hidden" id="longitude" name="Longitude">
-                </div>
+            <div class="form-group">
+                <label for="description" class="control-label">Description</label>
+                <textarea name="Description" id="description" rows="4" class="form-control form-control-sm rounded-0 summernote" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="size" class="control-label">Size (in hectares)</label>
+                <input name="Size" id="size" type="number" step="0.01" class="form-control form-control-sm form-control-border" required>
+            </div>
+            <div class="form-group">
+                <label for="logo" class="control-label">Upload Image</label>
+                <input type="file" id="logo" name="Image" class="form-control form-control-sm form-control-border" onchange="displayImg(this,$(this))" accept="image/png, image/jpeg" required>
+            </div>
+            <div class="form-group col-md-6 text-center">
+                <img src="<?= validate_image('') ?>" alt="Farm Image" id="cimg" class="border border-gray img-thumbnail">
             </div>
         </div>
-    </form>
-</div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="location" class="control-label">Select Farm Location and Draw Boundary</label>
+                <div id="map2"></div>
+                <!-- Hidden fields to store center coordinates and boundary data -->
+                <input type="number" id="latitude" name="Latitude">
+                <input type="number" id="longitude" name="Longitude">
+                <input type="hidden" id="boundary" name="Boundary">
+            </div>
+        </div>
+    </div>
+</form>
+
 <script>
     function displayImg(input, _this) {
         if (input.files && input.files[0]) {
@@ -122,171 +124,73 @@ require_once('./../../config.php');
             });
         });
     });
-
-   
 </script>
 <script>
+  let map;
+  let drawingManager;
+  let selectedShape;
+
   // Initialize the map
   function initMap() {
-    // Create a map centered at a default location
-    const map = new google.maps.Map(document.getElementById("map2"), {
-      zoom: 14, // Adjust the zoom level as needed
+    const defaultLocation = { lat: 13.2312895125931, lng: 121.194747 }; // Default location
+
+    map = new google.maps.Map(document.getElementById("map2"), {
+      zoom: 14,
+      center: defaultLocation,
     });
 
-    // Custom marker icon
-    const customMarker = '../uploads/markerhand.png';
+    // Initialize the drawing manager for polygons
+    drawingManager = new google.maps.drawing.DrawingManager({
+      drawingMode: google.maps.drawing.OverlayType.POLYGON,
+      drawingControl: true,
+      drawingControlOptions: {
+        position: google.maps.ControlPosition.TOP_CENTER,
+        drawingModes: ['polygon'],
+      },
+      polygonOptions: {
+        draggable: true,
+        editable: true,
+      },
+    });
 
-    // Variable to store the center coordinates
-    let centerCoords = { lat: 13.2312895125931, lng: 121.194747 }; // Default location
+    drawingManager.setMap(map);
 
-    // Array to store farm locations and associated crops with information fetched from PHP
-    const farmData = [
-      <?php
-        // Your PHP code to fetch farm locations and associated crops with information based on the SQL query
-        $user_id = $_settings->userdata('id');
-        $sql = "SELECT c.Name as CropName, c.Type, c.PlannedPlantingDate, c.DatePlanted, c.SizeOfPlantation, c.Description, c.Picture1, f.Name as FarmName, f.Latitude as FarmLat, f.Longitude as FarmLng
-                FROM crop c
-                INNER JOIN farm f ON c.FarmId = f.Id
-                INNER JOIN vendor_list v ON c.VendorId = v.id
-                WHERE v.user_id = '{$user_id}' AND v.delete_flag = 0
-                ORDER BY f.Name ASC, c.Name ASC";
-
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-          // Initialize an array to hold farm data
-          $farmDataArray = [];
-          while($row = $result->fetch_assoc()) {
-            // Group crops by farm
-            $farmDataArray[$row["FarmName"]][] = [
-              "cropName" => $row["CropName"],
-              "cropDetails" => [
-                "Type" => $row["Type"],
-                "PlannedPlantingDate" => $row["PlannedPlantingDate"],
-                "DatePlanted" => $row["DatePlanted"],
-                "SizeOfPlantation" => $row["SizeOfPlantation"],
-                "Description" => $row["Description"],
-                "Picture1" => $row["Picture1"]
-              ],
-              "lat" => $row["FarmLat"],
-              "lng" => $row["FarmLng"]
-            ];
-          }
-
-          // Generate JavaScript array for farm data
-          foreach ($farmDataArray as $farmName => $crops) {
-            echo "{ farmName: '{$farmName}', crops: [";
-            foreach ($crops as $crop) {
-              echo "{ cropName: '{$crop['cropName']}', cropDetails: " . json_encode($crop['cropDetails']) . ", lat: {$crop['lat']}, lng: {$crop['lng']} },";
-            }
-            echo "] },\n";
-          }
-        } else {
-          echo "{ farmName: 'No farms found', crops: [] }"; // Default empty data
+    // Event listener for completing the drawing
+    google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
+      if (event.type === google.maps.drawing.OverlayType.POLYGON) {
+        if (selectedShape) {
+          selectedShape.setMap(null);
         }
-      ?>
-    ];
+        selectedShape = event.overlay;
+        selectedShape.type = event.type;
 
-    // Add farm markers and crop info windows to the map
-    farmData.forEach((farm) => {
-      const farmMarker = new google.maps.Marker({
-        position: { lat: parseFloat(farm.crops[0].lat), lng: parseFloat(farm.crops[0].lng) }, // Use first crop coordinates
-        map: map,
-        title: farm.farmName,
-        icon: customMarker, // Use custom marker icon
-      });
-
-      const infowindow = new google.maps.InfoWindow({
-        content: generateInfoWindowContent(farm),
-      });
-
-      farmMarker.addListener("click", () => {
-        infowindow.open(map, farmMarker);
-      });
-
-      // Set the center coordinates to the first farm marker
-      if (!centerCoords) {
-        centerCoords = { lat: parseFloat(farm.crops[0].lat), lng: parseFloat(farm.crops[0].lng) };
+        // Store the boundary and center coordinates
+        calculatePolygonData(selectedShape);
       }
     });
-
-    // Center the map on the user's location if geolocation is available
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-
-          map.setCenter(userLocation);
-
-          const userMarker = new google.maps.Marker({
-            position: userLocation,
-            map: map,
-            icon: customMarker, // Use custom marker icon
-            draggable: true,
-          });
-
-          // Update the Latitude and Longitude input fields when the marker is dragged
-          google.maps.event.addListener(userMarker, 'dragend', function () {
-            const latLng = userMarker.getPosition();
-            document.getElementById('latitude').value = latLng.lat();
-            document.getElementById('longitude').value = latLng.lng();
-          });
-        },
-        () => {
-          // If the user denies the geolocation request, center the map on the default location
-          map.setCenter(centerCoords);
-        }
-      );
-    } else {
-      // If the browser doesn't support geolocation, center the map on the default location
-      map.setCenter(centerCoords);
-    }
-
-    // Add a draggable marker for selecting new farm location
-    const newFarmMarker = new google.maps.Marker({
-      position: centerCoords,
-      map: map,
-      draggable: true,
-      icon: customMarker, // Use custom marker icon
-    });
-
-    // Update the Latitude and Longitude input fields when the marker is dragged
-    google.maps.event.addListener(newFarmMarker, 'dragend', function () {
-      const latLng = newFarmMarker.getPosition();
-      document.getElementById('latitude').value = latLng.lat();
-      document.getElementById('longitude').value = latLng.lng();
-    });
   }
 
-  // Function to generate info window content for farms and associated crops
-  function generateInfoWindowContent(farm) {
-    let content = `<strong>${farm.farmName}</strong><br>`;
-    farm.crops.forEach((crop) => {
-      content += `
-        <div class="card mt-3">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-4">
-                <img src="../${crop.cropDetails.Picture1}" alt="Crop Image" width="100">
-              </div>
-              <div class="col-md-8">
-                <strong>${crop.cropName}</strong><br>
-                <ul class="list-unstyled">
-                  <li><strong title="Type">Type:</strong> ${crop.cropDetails.Type}</li>
-                  <li><strong title="Planned Planting Date">Planned Planting Date:</strong> ${crop.cropDetails.PlannedPlantingDate}</li>
-                  <li><strong title="Date Planted">Date Planted:</strong> ${crop.cropDetails.DatePlanted}</li>
-                  <li><strong title="Size of Plantation">Size of Plantation:</strong> ${crop.cropDetails.SizeOfPlantation}</li>
-                  <li><strong title="Description">Description:</strong> ${crop.cropDetails.Description}</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+  // Function to calculate the polygon's center and boundary
+  function calculatePolygonData(polygon) {
+    const path = polygon.getPath().getArray();
+    const bounds = new google.maps.LatLngBounds();
+    const boundaryCoordinates = [];
+
+    path.forEach(function (latLng) {
+      bounds.extend(latLng);
+      boundaryCoordinates.push({ lat: latLng.lat(), lng: latLng.lng() });
     });
-    return content;
+
+    const center = bounds.getCenter();
+
+    // Update the form fields with boundary and center coordinates
+    document.getElementById('latitude').value = center.lat();
+    document.getElementById('longitude').value = center.lng();
+    document.getElementById('boundary').value = JSON.stringify(boundaryCoordinates);
   }
+</script>
+
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBaEr_ZLsaoWcbipd--a1S5EPQe2RaEfio&libraries=drawing&callback=initMap"
+    async defer>
 </script>

@@ -443,10 +443,10 @@ if (!empty($crop['crop_image3'])) {
                 <i class="fas fa-ellipsis-v"></i>
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_<?= htmlspecialchars($pest['Id']) ?>">
-                <a class="dropdown-item edit_pd" href="#" data-pest-id="<?= htmlspecialchars($pest['Id']) ?>">Edit</a>
-                <a class="dropdown-item delete_croppestanddisease" href="#" data-pd-id="<?= htmlspecialchars($pest['Id']) ?>">Delete</a>
+                <a class="dropdown-item edit_pd" data-pest-id="<?= htmlspecialchars($pest['Id']) ?>">Edit</a>
+                <a class="dropdown-item delete_croppestanddisease" data-pd-id="<?= htmlspecialchars($pest['Id']) ?>">Delete</a>
                 <?php if ($not_been_reported): ?>
-                    <a class="dropdown-item report_pd" href="#" data-pdr-id="<?= htmlspecialchars($pest['Id']) ?>">Report</a>
+                    <a class="dropdown-item report_pd" data-pdr-id="<?= htmlspecialchars($pest['Id']) ?>">Report</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -867,10 +867,10 @@ if (!empty($crop['crop_image3'])) {
     var activityId = $(this).attr('data-activity-id'); // Ensure correct attribute selector
     uni_modal('Update Activity', "crops/edit_activity.php?id=" + activityId, 'large'); // Correct modal title
 });
-$('.edit-report').click(function(){
-    var reportId = $(this).attr('data-report-id'); // Ensure correct attribute selector
-    uni_modal('Update Report', "crops/edit_report.php?id=" + reportId, 'small'); // Correct modal title
-});
+// $('.edit-report').click(function(){
+//     var reportId = $(this).attr('data-report-id'); // Ensure correct attribute selector
+//     uni_modal('Update Report', "crops/edit_report.php?id=" + reportId, 'small'); // Correct modal title
+// });
 
 
 });

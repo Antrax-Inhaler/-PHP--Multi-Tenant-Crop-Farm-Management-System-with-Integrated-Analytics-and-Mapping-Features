@@ -147,6 +147,9 @@
   .dropdown-menu.show {
     display: block;
   }
+  .truncate-1{
+    color: white !important;
+  }
   </style>
       <nav class="w-100 px-2 py-1 position-fixed top-0 bg-dark text-light" id="login-nav">
         <div class="d-flex justify-content-between w-100">
@@ -202,6 +205,12 @@
         <li class="nav-item">
             <a href="./?page=map" class="nav-link <?= isset($page) && $page == 'map' ? "active" : "" ?>"><i class="fas fa-map-marker-alt"></i> Map Shop</a>
         </li>
+        <li class="nav-item">
+    <a href="./?page=calendar" class="nav-link <?= isset($page) && $page == 'calendar' ? "active" : "" ?>">
+        <i class="fas fa-calendar-alt"></i> Calendar
+    </a>
+</li>
+
         <?php if ($_settings->userdata('id') > 0 && $_settings->userdata('login_type') == 3) : ?>
             <li class="nav-item">
                 <?php
@@ -225,9 +234,9 @@
                 </li>
             <?php endif; ?>
         <?php endif; ?>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="./?page=about" class="nav-link <?= isset($page) && $page == 'about' ? "active" : "" ?>"><i class="fas fa-info-circle"></i> About Us</a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a href="./?page=tutorial" class="nav-link <?= isset($page) && $page == 'tutorial' ? "active" : "" ?>"><i class="fas fa-question-circle"></i> Tutorial</a>
         </li>
@@ -279,7 +288,7 @@
   });
 </script>
 
-<script>
+<!-- <script>
   document.addEventListener("DOMContentLoaded", function() {
     var userDropdownToggle = document.getElementById('userDropdownToggle');
     var userDropdownMenu = document.getElementById('userDropdownMenu');
@@ -297,4 +306,4 @@
       }
     });
   });
-</script>
+</script> -->
