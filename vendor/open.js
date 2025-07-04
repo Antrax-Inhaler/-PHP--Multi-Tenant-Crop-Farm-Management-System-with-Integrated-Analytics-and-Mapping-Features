@@ -1,7 +1,7 @@
 const OpenAI = require('openai-api');
 
 // Set your OpenAI API key
-const apiKey = 'sk-proj-dyC1mGDlzMrcFHC7lNm3T3BlbkFJVODY6mdEWC0aUcQs5z6Y';
+const apiKey = '';
 const openai = new OpenAI(apiKey);
 
 // Define the user input prompt
