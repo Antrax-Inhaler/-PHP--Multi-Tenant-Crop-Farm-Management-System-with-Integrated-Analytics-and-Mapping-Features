@@ -1,5 +1,24 @@
 # (PHP) Multi-Tenant Crop Farm Management System with Integrated Analytics and Mapping Features
  a multi-tenant crop farm management system with four portals: Buyer (crop orders, farm locations, and Google Maps integration), Farmer (e-commerce, farm management, crop tracking, weather insights), Manager (farmer data and reports), and Admin (system management and report generation). Integrated with Gemini API for AI-driven analytics on crop data, harvest planning, pest/disease solutions, and activity recommendations. Features include interactive farm maps, weather integration, and detailed report generation to streamline operations.
+
+## Tech Stack
+
+- PHP + MySQL — core backend and data layer
+- Google Maps API — geographical farm mapping
+- OpenWeather API — real-time weather forecasting
+- Gemini API — AI-driven crop analysis
+
+## Impact
+
+- Multi-tenant architecture supporting diverse user types on one shared platform, with fully isolated data per tenant
+- AI-driven crop analysis via the Gemini API
+- Real-time weather forecasting integration feeding directly into farm planning decisions
+- Geographical farm mapping with Google Maps
+
+Full write-up: https://nythosx.pages.dev/projects/agronet — by Joven Andrei Lagahit (NythosX)
+
+---
+
 <img width="1920" height="1032" alt="- Alumni - Google Chrome 16_08_2025 10_11_56 pm" src="https://github.com/user-attachments/assets/0f31d93b-09c4-4e28-84e2-0727d0859d09" />
 <img width="1920" height="1032" alt="- Alumni - Google Chrome 16_08_2025 10_16_24 pm" src="https://github.com/user-attachments/assets/f53cf27f-7c93-4f7c-9f86-1fab51f31eca" />
 <img width="1920" height="1032" alt="- Alumni - Google Chrome 16_08_2025 10_16_56 pm" src="https://github.com/user-attachments/assets/ed671364-e552-4e05-a31b-4c3ee7d962b1" />
